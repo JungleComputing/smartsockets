@@ -4,9 +4,8 @@ import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
-import ibis.smartsockets.hub.ConnectionProtocol;
-import ibis.smartsockets.hub.connections.MessageForwarderProtocol;
-import ibis.smartsockets.hub.connections.VirtualConnectionIndex;
+import ibis.smartsockets.hub.SmartSocketsProtocol;
+
 import ibis.smartsockets.util.TypedProperties;
 import ibis.util.ThreadPool;
 
@@ -60,11 +59,8 @@ public class ServiceLink implements Runnable {
     private int nextCallbackID = 0;
 
     private int maxWaitTime = DEFAULT_WAIT_TIME;
-
-    private final VirtualConnectionIndex vcIndex = new VirtualConnectionIndex(
-            true);
-
-    private VirtualConnectionCallBack vcCallBack = null;
+   
+    //private VirtualConnectionCallBack vcCallBack = null;
 
     private int sendBuffer = -1;
 
@@ -124,6 +120,7 @@ public class ServiceLink implements Runnable {
         ThreadPool.createNew(this, "ServiceLink Message Reader");
     }
 
+    /*
     public synchronized void registerVCCallBack(VirtualConnectionCallBack cb) {
         vcCallBack = cb;
     }
@@ -131,6 +128,7 @@ public class ServiceLink implements Runnable {
     public synchronized VirtualConnectionCallBack getVCCallBack() {
         return vcCallBack;
     }
+    */
     
     public void register(String identifier, CallBack callback) {
 
@@ -318,7 +316,7 @@ public class ServiceLink implements Runnable {
                     .getInputStream()));
 
             // Ask if we are allowed to join
-            out.write(ConnectionProtocol.SERVICELINK_CONNECT);
+            out.write(SmartSocketsProtocol.SERVICELINK_CONNECT);
             out.writeUTF(myAddress.toString());
             out.flush();
 
@@ -326,7 +324,7 @@ public class ServiceLink implements Runnable {
             int reply = in.read();
 
             // Throw an exception if the hub refuses our conenction
-            if (reply != ConnectionProtocol.CONNECTION_ACCEPTED) {
+            if (reply != SmartSocketsProtocol.CONNECTION_ACCEPTED) {
                 throw new IOException("Hub denied connection request (got: "
                         + reply);
             }
@@ -430,7 +428,7 @@ public class ServiceLink implements Runnable {
 
         storeInfoReply(id, value);
     }
-
+/*
     private void handleIncomingConnection() throws IOException {
 
         incomingConnections++;
@@ -462,7 +460,7 @@ public class ServiceLink implements Runnable {
                 logger.info("DENIED connection: " + index + ": no callback!");
             }
 
-            nackVirtualConnection(index, ServiceLinkProtocol.ERROR_NO_CALLBACK);
+            nackVirtualConnection(index, SmartSocketsProtocol.ERROR_NO_CALLBACK);
             return;
         }
 
@@ -560,41 +558,7 @@ public class ServiceLink implements Runnable {
         vcb.connectNACK(index, reason);
     }
 
-    /*    
-     public void rejectIncomingConnection(long index) {
-     
-     // The incoming connection 'index' was rejected.
-     if (logger.isInfoEnabled()) {
-     logger.info("REJECTED connection: (" + index 
-     + "): serversocket did not accept");
-     }
-     
-     Credits c = credits.get(index);
-     
-     if (c == null) { 
-     failedIncomingConnections++;
-     
-     logger.warn("Cannot close connection: " + index 
-     + " since it does not exist (anymore)!");            
-     return;
-     }
-     
-     try { 
-     synchronized (out) {         
-     out.write(MessageForwarderProtocol.CREATE_VIRTUAL_ACK);
-     out.writeLong(index);
-     out.writeUTF("DENIED");  
-     out.writeUTF("Connection refused");
-     out.flush();
-     }
-     } catch (IOException e) {
-     logger.warn("ServiceLink: Exception while writing to hub!", e);
-     closeConnectionToHub();                      
-     }
-     
-     rejectedIncomingConnections++;
-     }
-     */
+   
 
     private void disconnectCallback(long index) {
 
@@ -609,69 +573,9 @@ public class ServiceLink implements Runnable {
         vcb.disconnect(index);
     }
 
-    /*
-     public boolean acceptIncomingConnection(long index) throws IOException { 
-     
-     acceptedIncomingConnections++;
-     
-     // The incoming connection 'index' was accepted. The only problem is 
-     // that we are not sure if we are in time. We therefore send a reply, 
-     // for which we get a reply back again...
-     if (logger.isInfoEnabled()) {
-     logger.info("ACCEPTED connection: (" + index + ")");
-     }
+   
 
-     Credits c = credits.get(index);
-     
-     if (c == null) { 
-     if (logger.isInfoEnabled()) {
-     logger.info("ACCEPTED connection disappeared: " 
-     + " (" + index + "): client has already closed!");
-     }
-     
-     failedIncomingConnections++;
-     disconnectCallback(index);
-     return false;
-     }
-     
-     try { 
-     synchronized (out) {         
-     out.write(MessageForwarderProtocol.CREATE_VIRTUAL_ACK);
-     out.writeLong(index);
-     out.writeUTF("OK");  
-     out.writeUTF("" + maxCredits);                    
-     out.flush();
-     }
-     
-     } catch (IOException e) {
-     logger.warn("ServiceLink: Exception while writing to hub!", e);
-     closeConnectionToHub();
-     throw new IOException("Connection to hub lost!");            
-     }
-     
-     acceptedIncomingConnections++;
-     
-     return true;
-     }
-     */
-
-    /* 
-     private void closeConnection(long index) { 
-     
-     Credits c = credits.remove(index);
-     
-     if (c == null) {
-     // This may happen if we closed the connection while the other
-     // sides close was in transit...
-     if (logger.isInfoEnabled()) { 
-     logger.info("Cannot close connection: " + index 
-     + " since it does not exist (anymore)!");
-     }
-     return;
-     }
-     
-     disconnectCallback(index); 
-     }*/
+   
 
     private void handleIncomingClose() throws IOException {
 
@@ -747,7 +651,9 @@ public class ServiceLink implements Runnable {
 
         vcb.gotMessageACK(index, data);
     }
-
+*/
+    
+    
     void receiveMessages() {
 
         while (getConnected()) {
@@ -765,43 +671,43 @@ public class ServiceLink implements Runnable {
                     closeConnectionToHub();
                     break;
 
-                case MessageForwarderProtocol.INFO_MESSAGE:
+                case SmartSocketsProtocol.INFO_MESSAGE:
                     handleInfoMessage();
                     break;
-
-                case MessageForwarderProtocol.CREATE_VIRTUAL:
+/*
+                case SmartSocketsProtocol.CREATE_VIRTUAL:
                     handleIncomingConnection();
                     break;
 
-                case MessageForwarderProtocol.CREATE_VIRTUAL_ACK:
+                case SmartSocketsProtocol.CREATE_VIRTUAL_ACK:
                     handleIncomingConnectionACK();
                     break;
 
-                case MessageForwarderProtocol.CREATE_VIRTUAL_ACK_ACK:
+                case SmartSocketsProtocol.CREATE_VIRTUAL_ACK_ACK:
                     handleIncomingConnectionACKACK();
                     break;
 
-                case MessageForwarderProtocol.CREATE_VIRTUAL_NACK:
+                case SmartSocketsProtocol.CREATE_VIRTUAL_NACK:
                     handleIncomingConnectionNACK();
                     break;
 
-                case MessageForwarderProtocol.CLOSE_VIRTUAL:
+                case SmartSocketsProtocol.CLOSE_VIRTUAL:
                     handleIncomingClose();
                     break;
 
-                case MessageForwarderProtocol.MESSAGE_VIRTUAL:
+                case SmartSocketsProtocol.MESSAGE_VIRTUAL:
                     handleIncomingMessage();
                     break;
 
-                case MessageForwarderProtocol.MESSAGE_VIRTUAL_ACK:
+                case SmartSocketsProtocol.MESSAGE_VIRTUAL_ACK:
                     handleIncomingAck();
                     break;
-
-                case ServiceLinkProtocol.INFO_REPLY:
+*/
+                case SmartSocketsProtocol.INFO_REPLY:
                     handleInfo();
                     break;
 
-                case ServiceLinkProtocol.PROPERTY_ACK:
+                case SmartSocketsProtocol.PROPERTY_ACK:
                     handlePropertyAck();
                     break;
 
@@ -893,7 +799,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(MessageForwarderProtocol.INFO_MESSAGE);
+                out.write(SmartSocketsProtocol.INFO_MESSAGE);
 
                 DirectSocketAddress.write(myAddress, out);
                 DirectSocketAddress.write(hubAddress, out); // may be null
@@ -934,7 +840,7 @@ public class ServiceLink implements Runnable {
         
         try {
             synchronized (out) {
-                out.write(MessageForwarderProtocol.DATA_MESSAGE);
+                out.write(SmartSocketsProtocol.DATA_MESSAGE);
                 
                 out.writeInt(4 + targetHub.getAddress().length +  
                 		4 + target.getAddress().length +  
@@ -1027,7 +933,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.CLIENTS_FOR_HUB);
+                out.write(SmartSocketsProtocol.CLIENTS_FOR_HUB);
                 out.writeInt(id);
                 out.writeUTF(hub.toString());
                 out.writeUTF(tag);
@@ -1062,7 +968,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.ALL_CLIENTS);
+                out.write(SmartSocketsProtocol.ALL_CLIENTS);
                 out.writeInt(id);
                 out.writeUTF(tag);
                 out.flush();
@@ -1092,7 +998,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.HUBS);
+                out.write(SmartSocketsProtocol.HUBS);
                 out.writeInt(id);
                 out.flush();
             }
@@ -1131,7 +1037,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.HUB_DETAILS);
+                out.write(SmartSocketsProtocol.HUB_DETAILS);
                 out.writeInt(id);
                 out.flush();
             }
@@ -1161,7 +1067,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.DIRECTION);
+                out.write(SmartSocketsProtocol.DIRECTION);
                 out.writeInt(id);
                 out.writeUTF(client);
                 out.flush();
@@ -1186,123 +1092,8 @@ public class ServiceLink implements Runnable {
         return hubAddress;
     }
 
-    /*
-     private void registerConnectionACK(long index) {        
-     synchronized (connectionACKs) {
-     connectionACKs.put(index, null);
-     }
-     }
-     
-     private void gotConnectionACK(long index, String [] result) {    
-     
-     //logger.warn("Got ACK: " + index + ": " + Arrays.deepToString(result));
-     
-     synchronized (connectionACKs) { 
-     if (connectionACKs.containsKey(index)) { 
-     
-     //   logger.warn("Delivering ACK: " + index);
-     
-     connectionACKs.put(index, result);
-     connectionACKs.notifyAll();
-     return;
-     }             
-     }
-     
-     // If we end up here, there was no one waiting for a connection ACK 
-     // for connection 'index' anymore. The connector probably timed out.
-     // To inform the other side of this, we send a 'close' back as a reply.
-     
-     //  logger.warn("Deleting ACK: " + index);
-     
-     try { 
-     closeVirtualConnection(index);
-     } catch (IOException e) {
-     // ignored... we did our best....
-     }
-     }
-     
-     public void waitForConnectionACK(long index, int timeout) 
-     throws IOException { 
 
-     // logger.warn("Waiting for ACK: " + index);
-     
-     byte result;
-     
-     synchronized (connectionACKs) {
-     
-     long endTime = System.currentTimeMillis() + timeout;
-     long timeLeft = timeout;
-     
-     result = connectionACKs.get(index);
-     
-     while (result == null && timeLeft >= 0) { 
-     try { 
-     connectionACKs.wait(timeLeft);
-     } catch (InterruptedException e) {
-     // ignore
-     }
-     
-     if (timeout > 0) { 
-     timeLeft = endTime - System.currentTimeMillis();
-     
-     // Prevents us from accidently falling into a wait(0)!!
-     if (timeLeft == 0) { 
-     timeLeft = -1;
-     }
-     }
-     
-     result = connectionACKs.get(index);
-     }
-     
-     result = connectionACKs.remove(index);
-     }
-
-     // No result ? Timeout!
-     if (result == null) {
-     failedOutgoingConnections++;
-     throw new SocketTimeoutException("Connect " + index 
-     + " timed out!");
-     }
-     
-     // We have a result, but it may not be positive...
-     if (result[0].equals("DENIED")) {
-     
-     if (result[1].equals("Unknown host")) { 
-     failedOutgoingConnections++;
-     throw new UnknownHostException(); 
-     }
-     
-     if (result[1].equals("Connection refused")) {
-     rejectedOutgoingConnections++;
-     throw new ConnectException(); 
-     }
-     
-     failedOutgoingConnections++;
-     throw new IOException("Connection " + index + " failed: " + result[1]);
-     } 
-     
-     // Sanity check
-     if (!result[0].equals("OK")) {
-     failedOutgoingConnections++;
-     throw new IOException("Connection + " + index + " failed: " + result[0]);
-     } 
-     
-     int tmp = DEFAULT_CREDITS; 
-     
-     try { 
-     tmp = Integer.parseInt(result[1]);
-     } catch (Exception e) {
-     logger.warn("Failed to parse number of credits:" + result[1]);
-     }
-     
-     System.err.println("Created virtual stream with " + tmp + " credits!");
-     
-     // Otherwise, the connection is accepted.
-     credits.put(index, new Credits(tmp));
-     acceptedOutgoingConnections++;
-     }
-     */
-
+/*
     public long getConnectionNumber() {
         return vcIndex.nextIndex();
     }
@@ -1325,7 +1116,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.writeByte(MessageForwarderProtocol.CREATE_VIRTUAL);
+                out.writeByte(SmartSocketsProtocol.CREATE_VIRTUAL);
 
                 DirectSocketAddress.write(myAddress, out);
                 DirectSocketAddress.write(hubAddress, out);
@@ -1363,7 +1154,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.writeByte(MessageForwarderProtocol.CREATE_VIRTUAL_ACK);
+                out.writeByte(SmartSocketsProtocol.CREATE_VIRTUAL_ACK);
                 out.writeLong(index);
                 out.writeInt(fragment);
                 out.writeInt(buffer);
@@ -1392,7 +1183,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.writeByte(MessageForwarderProtocol.CREATE_VIRTUAL_ACK_ACK);
+                out.writeByte(SmartSocketsProtocol.CREATE_VIRTUAL_ACK_ACK);
                 out.writeLong(index);
                 out.writeBoolean(success);
                 out.flush();
@@ -1420,7 +1211,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(MessageForwarderProtocol.CREATE_VIRTUAL_NACK);
+                out.write(SmartSocketsProtocol.CREATE_VIRTUAL_NACK);
                 out.writeLong(index);
                 out.writeByte(reason);
                 out.flush();
@@ -1449,7 +1240,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(MessageForwarderProtocol.CLOSE_VIRTUAL);
+                out.write(SmartSocketsProtocol.CLOSE_VIRTUAL);
                 out.writeLong(index);
                 out.flush();
             }
@@ -1477,7 +1268,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(MessageForwarderProtocol.MESSAGE_VIRTUAL);
+                out.write(SmartSocketsProtocol.MESSAGE_VIRTUAL);
                 out.writeLong(index);
                 out.writeInt(len);
                 out.write(message, off, len);
@@ -1505,7 +1296,7 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(MessageForwarderProtocol.MESSAGE_VIRTUAL_ACK);
+                out.write(SmartSocketsProtocol.MESSAGE_VIRTUAL_ACK);
                 out.writeLong(index);
                 out.writeInt(data);
                 out.flush();
@@ -1517,6 +1308,7 @@ public class ServiceLink implements Runnable {
 
         //System.err.println("A");
     }
+    */
 
     public boolean registerProperty(String tag, String value)
             throws IOException {
@@ -1537,14 +1329,14 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.REGISTER_PROPERTY);
+                out.write(SmartSocketsProtocol.REGISTER_PROPERTY);
                 out.writeInt(id);
                 out.writeUTF(tag);
                 out.writeUTF(value);
                 out.flush();
             }
 
-            return getInfoReply(id, ServiceLinkProtocol.PROPERTY_ACCEPTED);
+            return getInfoReply(id, SmartSocketsProtocol.PROPERTY_ACCEPTED);
         } catch (IOException e) {
             logger.warn("ServiceLink: Exception while writing to hub!", e);
             closeConnectionToHub();
@@ -1572,14 +1364,14 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.UPDATE_PROPERTY);
+                out.write(SmartSocketsProtocol.UPDATE_PROPERTY);
                 out.writeInt(id);
                 out.writeUTF(tag);
                 out.writeUTF(value);
                 out.flush();
             }
 
-            return getInfoReply(id, ServiceLinkProtocol.PROPERTY_ACCEPTED);
+            return getInfoReply(id, SmartSocketsProtocol.PROPERTY_ACCEPTED);
         } catch (IOException e) {
             logger.warn("ServiceLink: Exception while writing to hub!", e);
             closeConnectionToHub();
@@ -1603,13 +1395,13 @@ public class ServiceLink implements Runnable {
 
         try {
             synchronized (out) {
-                out.write(ServiceLinkProtocol.REMOVE_PROPERTY);
+                out.write(SmartSocketsProtocol.REMOVE_PROPERTY);
                 out.writeInt(id);
                 out.writeUTF(tag);
                 out.flush();
             }
 
-            return getInfoReply(id, ServiceLinkProtocol.PROPERTY_ACCEPTED);
+            return getInfoReply(id, SmartSocketsProtocol.PROPERTY_ACCEPTED);
         } catch (IOException e) {
             logger.warn("ServiceLink: Exception while writing to hub!", e);
             closeConnectionToHub();

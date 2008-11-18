@@ -2,7 +2,6 @@ package ibis.smartsockets.virtual.modules.hubrouted;
 
 import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.direct.DirectSocketAddress;
-import ibis.smartsockets.hub.servicelink.ServiceLinkProtocol;
 import ibis.smartsockets.hub.servicelink.VirtualConnectionCallBack;
 import ibis.smartsockets.util.TypedProperties;
 import ibis.smartsockets.virtual.NonFatalIOException;

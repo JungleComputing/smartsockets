@@ -7,7 +7,7 @@ import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.discovery.Discovery;
 import ibis.smartsockets.hub.connections.ClientConnection;
 import ibis.smartsockets.hub.connections.HubConnection;
-import ibis.smartsockets.hub.connections.VirtualConnections;
+
 import ibis.smartsockets.hub.state.ConnectionsSelector;
 import ibis.smartsockets.hub.state.HubDescription;
 import ibis.smartsockets.hub.state.HubList;
@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public final class Hub extends Thread {
             
     private final Discovery discovery;
         
-    private final VirtualConnections virtualConnections;
+   
     
     private final String addressFile; 
     
@@ -62,6 +63,10 @@ public final class Hub extends Thread {
     public Hub(TypedProperties p) throws IOException { 
 
         super("Hub");
+        
+        if (p == null) { 
+        	p = SmartSocketsProperties.getDefaultProperties();
+        }
         
         boolean allowDiscovery = 
             p.booleanProperty(SmartSocketsProperties.DISCOVERY_ALLOWED, false);
@@ -87,6 +92,9 @@ public final class Hub extends Thread {
                     + Arrays.deepToString(clusters));
         }
                 
+        // Ensure that a UUID is always generated, even if this machine has global IP addresses
+        p.setProperty(SmartSocketsProperties.UUID_REQUIRED, "true");
+        
         DirectSocketFactory factory = DirectSocketFactory.getSocketFactory(p);
         
         // Create the hub list
@@ -94,7 +102,7 @@ public final class Hub extends Thread {
                 
         connections = new Connections();
         
-        virtualConnections = new VirtualConnections();
+      
        
         int port = p.getIntProperty(SmartSocketsProperties.HUB_PORT, DEFAULT_ACCEPT_PORT);
         
@@ -121,13 +129,13 @@ public final class Hub extends Thread {
         
         // NOTE: These are not started until later. We first need to init the
         // rest of the world!        
-        acceptor = new Acceptor(p, port, state, connections, hubs, 
-                virtualConnections, factory, delegationAddress);        
+        acceptor = new Acceptor(p, port, state, connections, /*hubs, 
+                virtualConnections,*/ factory, delegationAddress);        
         
         connector = new Connector(p, state, connections, hubs, 
-                virtualConnections, factory);
+               factory);
      
-        DirectSocketAddress local = acceptor.getLocal();    
+        DirectSocketAddress local = acceptor.getLocalAddress();    
         connector.setLocal(local);
                 
         if (goslogger.isInfoEnabled()) {
@@ -300,8 +308,14 @@ public final class Hub extends Thread {
     }
     
     public DirectSocketAddress getHubAddress() { 
-        return acceptor.getLocal();
+        return acceptor.getLocalAddress();
     }
+    
+    /*
+    public UUID getHubUUID() { 
+        return acceptor.getLocalUUID();
+    }
+    */
     
     public DirectSocketAddress [] knownHubs() {        
         return hubs.knownHubs();        

@@ -7,7 +7,7 @@ import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.discovery.Discovery;
 import ibis.smartsockets.hub.connections.ClientConnection;
 import ibis.smartsockets.hub.connections.HubConnection;
-import ibis.smartsockets.hub.connections.VirtualConnections;
+
 import ibis.smartsockets.hub.state.ConnectionsSelector;
 import ibis.smartsockets.hub.state.HubDescription;
 import ibis.smartsockets.hub.state.HubList;
@@ -52,7 +52,7 @@ public final class Hub extends Thread {
             
     private final Discovery discovery;
         
-    private final VirtualConnections virtualConnections;
+  
     
     private final String addressFile; 
     
@@ -95,7 +95,7 @@ public final class Hub extends Thread {
                 
         connections = new Connections();
         
-        virtualConnections = new VirtualConnections();
+      
        
         int port = p.getIntProperty(SmartSocketsProperties.HUB_PORT, DEFAULT_ACCEPT_PORT);
         
@@ -122,11 +122,9 @@ public final class Hub extends Thread {
         
         // NOTE: These are not started until later. We first need to init the
         // rest of the world!        
-        acceptor = new Acceptor(p, port, state, connections, hubs, 
-                virtualConnections, factory, delegationAddress);        
+        acceptor = new Acceptor(p, port, state, connections, hubs, factory, delegationAddress);        
         
-        connector = new Connector(p, state, connections, hubs, 
-                virtualConnections, factory);
+        connector = new Connector(p, state, connections, hubs, factory);
      
         DirectSocketAddress local = acceptor.getLocal();    
         connector.setLocal(local);

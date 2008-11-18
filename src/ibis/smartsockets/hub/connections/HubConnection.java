@@ -4,7 +4,7 @@ import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.hub.Connections;
-import ibis.smartsockets.hub.HubProtocol;
+import ibis.smartsockets.hub.SmartSocketsProtocol;
 import ibis.smartsockets.hub.state.ClientDescription;
 import ibis.smartsockets.hub.state.HubDescription;
 import ibis.smartsockets.hub.state.HubList;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class HubConnection extends MessageForwardingConnection {
 
@@ -42,10 +41,10 @@ public class HubConnection extends MessageForwardingConnection {
     
     public HubConnection(DirectSocket s, DataInputStream in, 
             DataOutputStream out, HubDescription peer, Connections connections, 
-            HubList hubs, StateCounter state, VirtualConnections vcs, 
+            HubList hubs, StateCounter state,
             boolean master) {
         
-        super(s, in, out, connections, hubs, vcs, master, "Hub(" 
+        super(s, in, out, connections, hubs, master, "Hub(" 
                 + peer.hubAddressAsString + ")");
         
         this.peer = peer;        
@@ -117,14 +116,14 @@ public class HubConnection extends MessageForwardingConnection {
     
     private void writePing() throws IOException {      
         synchronized (out) {
-            out.write(HubProtocol.PING);
+            out.write(SmartSocketsProtocol.PING);
         }
     } 
     
     private void writeHub(HubDescription d) throws IOException {  
         
         synchronized (out) {
-            out.write(HubProtocol.GOSSIP);
+            out.write(SmartSocketsProtocol.GOSSIP);
 
             out.writeUTF(d.hubAddress.toString());
             out.writeUTF(d.getName());
@@ -261,8 +260,6 @@ public class HubConnection extends MessageForwardingConnection {
         peer.removeConnection();
        
         DirectSocketFactory.close(s, out, in);            
-    
-        closeAllVirtualConnections(uniquePrefix);
     } 
     
     protected boolean handleOpcode(int opcode) {
@@ -270,14 +267,14 @@ public class HubConnection extends MessageForwardingConnection {
         try { 
             switch (opcode) { 
         
-            case HubProtocol.GOSSIP:
+            case SmartSocketsProtocol.GOSSIP:
                 if (goslogger.isInfoEnabled()) {
                     goslogger.info("HubConnection got gossip!");
                 }
                 readHub();
                 return true;
     
-            case HubProtocol.PING:
+            case SmartSocketsProtocol.PING:
                 if (goslogger.isInfoEnabled()) {
                     goslogger.info("HubConnection got ping!");
                 }

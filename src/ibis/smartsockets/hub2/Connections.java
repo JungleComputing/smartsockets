@@ -1,5 +1,7 @@
 package ibis.smartsockets.hub2;
 
+import java.util.UUID;
+
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.hub.connections.ClientConnection;
 import ibis.smartsockets.hub.connections.HubConnection;

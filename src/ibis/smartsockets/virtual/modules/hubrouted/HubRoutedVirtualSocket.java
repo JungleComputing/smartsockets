@@ -1,7 +1,6 @@
 package ibis.smartsockets.virtual.modules.hubrouted;
 
 import ibis.smartsockets.hub.servicelink.ServiceLink;
-import ibis.smartsockets.hub.servicelink.ServiceLinkProtocol;
 import ibis.smartsockets.virtual.TargetOverloadedException;
 import ibis.smartsockets.virtual.VirtualSocket;
 import ibis.smartsockets.virtual.VirtualSocketAddress;

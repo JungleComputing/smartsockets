@@ -8,7 +8,6 @@ import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.hub.connections.ClientConnection;
 import ibis.smartsockets.hub.connections.HubConnection;
-import ibis.smartsockets.hub.connections.VirtualConnections;
 import ibis.smartsockets.hub.state.HubDescription;
 import ibis.smartsockets.hub.state.HubList;
 import ibis.smartsockets.hub.state.StateCounter;
@@ -50,10 +49,10 @@ public class Acceptor extends CommunicationThread {
     
     Acceptor(TypedProperties p, int port, StateCounter state, 
             Connections connections, HubList knownProxies, 
-            VirtualConnections vcs, DirectSocketFactory factory, 
+            DirectSocketFactory factory, 
             DirectSocketAddress delegationAddress) throws IOException {
 
-        super("HubAcceptor", state, connections, knownProxies, vcs, factory);        
+        super("HubAcceptor", state, connections, knownProxies, factory);        
 
         if (delegationAddress == null) { 
             sendBuffer = p.getIntProperty(SmartSocketsProperties.HUB_SEND_BUFFER, -1);
@@ -85,7 +84,7 @@ public class Acceptor extends CommunicationThread {
         d.setCanReachMe();
 
         HubConnection c = new HubConnection(s, in, out, d, connections, 
-                knownHubs, state, virtualConnections, false);
+                knownHubs, state, false);
 
         if (!d.createConnection(c)) { 
             // There already was a connection with this hub...  
@@ -93,7 +92,7 @@ public class Acceptor extends CommunicationThread {
                 hconlogger.info("Connection from " + addr + " refused (duplicate)");
             }
                       
-            out.write(ConnectionProtocol.CONNECTION_REFUSED);
+            out.write(SmartSocketsProtocol.CONNECTION_REFUSED);
             out.flush();
             return false;
         } else {                                     
@@ -104,7 +103,7 @@ public class Acceptor extends CommunicationThread {
                        + ", clients = " + connections.numberOfClients() + ")"); 
             } 
             
-            out.write(ConnectionProtocol.CONNECTION_ACCEPTED);            
+            out.write(SmartSocketsProtocol.CONNECTION_ACCEPTED);            
             out.flush();
 
             // Now activate it. 
@@ -137,7 +136,7 @@ public class Acceptor extends CommunicationThread {
                     " refused, since it already exists!"); 
                 } 
 
-                out.write(ConnectionProtocol.CONNECTION_REFUSED);
+                out.write(SmartSocketsProtocol.CONNECTION_REFUSED);
                 out.flush();
                 DirectSocketFactory.close(s, out, in);
                 return false;
@@ -149,12 +148,12 @@ public class Acceptor extends CommunicationThread {
                          + ", clients = " + connections.numberOfClients() + ")");
             } 
 
-            out.write(ConnectionProtocol.CONNECTION_ACCEPTED);
+            out.write(SmartSocketsProtocol.CONNECTION_ACCEPTED);
             out.writeUTF(getLocalAsString());            
             out.flush();
 
             ClientConnection c = new ClientConnection(srcAddr, s, in, out, 
-                    connections, knownHubs, virtualConnections);
+                    connections, knownHubs);
             
             connections.put(srcAddr, c);                                               
             c.activate();
@@ -225,19 +224,19 @@ public class Acceptor extends CommunicationThread {
             int opcode = in.read();
 
             switch (opcode) {
-            case ConnectionProtocol.HUB_CONNECT:
+            case SmartSocketsProtocol.HUB_CONNECT:
                 result = handleIncomingHubConnect(s, in, out);                   
                 break;
 
-            case ConnectionProtocol.PING:                
+            case SmartSocketsProtocol.PING:                
                 result = handlePing(s, in, out);                   
                 break;
               
-            case ConnectionProtocol.SERVICELINK_CONNECT:
+            case SmartSocketsProtocol.SERVICELINK_CONNECT:
                 result = handleServiceLinkConnect(s, in, out);
                 break;                
             
-            case ConnectionProtocol.GET_SPLICE_INFO:
+            case SmartSocketsProtocol.GET_SPLICE_INFO:
                 result = handleSpliceInfo(s, in, out);
                 break;                
                             

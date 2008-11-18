@@ -5,7 +5,7 @@ import ibis.smartsockets.direct.DirectSSHSocket;
 import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.hub.connections.HubConnection;
-import ibis.smartsockets.hub.connections.VirtualConnections;
+
 import ibis.smartsockets.hub.state.HubDescription;
 import ibis.smartsockets.hub.state.HubList;
 import ibis.smartsockets.hub.state.StateCounter;
@@ -31,10 +31,10 @@ class Connector extends CommunicationThread {
     private final int usercode;
     
     Connector(TypedProperties p, StateCounter state, Connections connections,
-            HubList knownHubs, VirtualConnections vcs,
+            HubList knownHubs, 
             DirectSocketFactory factory) {
         
-        super("HubConnector", state, connections, knownHubs, vcs, factory);
+        super("HubConnector", state, connections, knownHubs, factory);
     
         sendBuffer = p.getIntProperty(SmartSocketsProperties.HUB_SEND_BUFFER, -1);
         receiveBuffer = p.getIntProperty(SmartSocketsProperties.HUB_RECEIVE_BUFFER, -1);        
@@ -48,19 +48,19 @@ class Connector extends CommunicationThread {
             hconlogger.debug("Sending connection request");
         }
                 
-        out.write(ConnectionProtocol.HUB_CONNECT);
+        out.write(SmartSocketsProtocol.HUB_CONNECT);
         out.writeUTF(localAsString);
         out.flush();
 
         int opcode = in.read();
 
         switch (opcode) {
-        case ConnectionProtocol.CONNECTION_ACCEPTED:
+        case SmartSocketsProtocol.CONNECTION_ACCEPTED:
             if (hconlogger.isDebugEnabled()) {
                 hconlogger.debug("Connection request accepted");
             }
             return true;
-        case ConnectionProtocol.CONNECTION_REFUSED:
+        case SmartSocketsProtocol.CONNECTION_REFUSED:
             if (hconlogger.isDebugEnabled()) {
                 hconlogger.debug("Connection request refused (duplicate)");
             }
@@ -98,7 +98,7 @@ class Connector extends CommunicationThread {
             in = new DataInputStream(
                     new BufferedInputStream(s.getInputStream()));
 
-            out.write(ConnectionProtocol.PING);
+            out.write(SmartSocketsProtocol.PING);
             out.writeUTF(localAsString);
             out.flush();            
             
@@ -193,7 +193,7 @@ class Connector extends CommunicationThread {
                 }
                 
                 c = new HubConnection(s, in, out, d, connections, 
-                        knownHubs, state, virtualConnections, true);
+                        knownHubs, state,  true);
                 
                 result = d.createConnection(c);                
                 
@@ -203,7 +203,7 @@ class Connector extends CommunicationThread {
                     }
                     
                     // never mind...
-                    out.write(ConnectionProtocol.PING);
+                    out.write(SmartSocketsProtocol.PING);
                     out.writeUTF(localAsString);
                     out.flush();
                 } else {
@@ -218,7 +218,7 @@ class Connector extends CommunicationThread {
 
                 if (result) {                 
                     c = new HubConnection(s, in, out, d, connections, 
-                            knownHubs, state, virtualConnections, false);                
+                            knownHubs, state, false);                
                     result = d.createConnection(c);
                     
                     if (!result) { 

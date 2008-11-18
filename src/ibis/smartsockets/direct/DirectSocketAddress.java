@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 
 /**
@@ -50,7 +51,7 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
     private transient InetSocketAddress [] externalAds;
     private transient InetSocketAddress [] publicAds;
     private transient InetSocketAddress [] privateAds;
-    private transient byte [] UUID;
+    private transient byte [] uuid;
         
     // Unfortunately, this is the least that is required for SSH-tunneling...
     private transient String user;
@@ -68,7 +69,7 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
         this.externalAds = (externalAds == null ? new InetSocketAddress[0]:externalAds);
         this.publicAds = (publicAds == null ? new InetSocketAddress[0] : publicAds);
         this.privateAds = (privateAds == null ? new InetSocketAddress[0] : privateAds);
-        this.UUID = UUID;
+        this.uuid = UUID;
         this.user = user;        
     }
     
@@ -102,8 +103,8 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
             index = decode(privateAds, coded, index);
 
             if (uuidLen > 0) {
-                UUID = new byte[uuidLen];
-                System.arraycopy(coded, index, UUID, 0, uuidLen);
+                uuid = new byte[uuidLen];
+                System.arraycopy(coded, index, uuid, 0, uuidLen);
                 index += uuidLen;
             }        
 
@@ -256,8 +257,8 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
             len += codedSize(publicAds);
             len += codedSize(privateAds);
             
-            if (UUID != null) { 
-                len += UUID.length;
+            if (uuid != null) { 
+                len += uuid.length;
             }
             
             if (user != null && user.length() > 0) {
@@ -273,7 +274,7 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
             codedForm[index++] = (byte) (externalAds.length & 0xFF);
             codedForm[index++] = (byte) (publicAds.length & 0xFF);
             codedForm[index++] = (byte) (privateAds.length & 0xFF);
-            codedForm[index++] = (byte) ((UUID == null ? 0 : UUID.length) & 0xFF);
+            codedForm[index++] = (byte) ((uuid == null ? 0 : uuid.length) & 0xFF);
             codedForm[index++] = 
                 (byte) ((codedUser == null ? 0 : codedUser.length) & 0xFF);
             
@@ -281,9 +282,9 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
             index = encode(publicAds, codedForm, index);
             index = encode(privateAds, codedForm, index);
             
-            if (UUID != null) { 
-                System.arraycopy(UUID, 0, codedForm, index, UUID.length);
-                index += UUID.length; 
+            if (uuid != null) { 
+                System.arraycopy(uuid, 0, codedForm, index, uuid.length);
+                index += uuid.length; 
             }
             
             if (user != null && user.length() > 0) { 
@@ -420,6 +421,24 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
         return privateAds.clone();
     }
     
+    public UUID getUUID() { 
+    	
+    	long hi = 0;
+    	long low = 0;
+    	
+    	for (int i=0;i<8;i++) { 
+    		hi = hi << 8 | (0xFF & uuid[i]);
+    		low = low << 8 | (0xFF & uuid[8+i]);
+    	}
+    	
+    	return new UUID(hi, low);
+    }
+    
+    public byte [] getUUIDAsBytes() { 
+    	return uuid.clone();
+    }
+ 
+    
     /**
      * Returns is this DirectSocketAddress has any public addresses. 
      * 
@@ -513,7 +532,7 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
         DirectSocketAddress tmp = (DirectSocketAddress) other;
       
         // First, compare UUIDs 
-        if (!Arrays.equals(UUID, tmp.UUID)) { 
+        if (!Arrays.equals(uuid, tmp.uuid)) { 
             return false;
         } 
                  
@@ -625,9 +644,9 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
                 needSlash = true;
             }
         
-            if (UUID != null) { 
+            if (uuid != null) { 
                 b.append(UUID_SEPERATOR);
-                b.append(NetworkUtils.UUIDToString(UUID));
+                b.append(NetworkUtils.UUIDToString(uuid));
             }
             
             if (user != null && user.length() > 0) { 
@@ -731,9 +750,9 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
         // Check UUIDs. Three cases fail here, either both have a UUID and they
         // are different, or either has a UUID and the other has one or more
         // public addresses. All other combination pass on to the next tests... 
-        if (UUID != null) {            
-            if (other.UUID != null) { 
-                if (!Arrays.equals(UUID, other.UUID)) {
+        if (uuid != null) {            
+            if (other.uuid != null) { 
+                if (!Arrays.equals(uuid, other.uuid)) {
                     return false;
                 } 
             } else { 
@@ -744,7 +763,7 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
                 }
             }
         } else { 
-            if (other.UUID != null && publicAds.length > 0) { 
+            if (other.uuid != null && publicAds.length > 0) { 
                 // The other has a UUID so it must only have private addresses, 
                 // while I have public addresses as well...  
                 return false;
@@ -1337,12 +1356,12 @@ public class DirectSocketAddress extends SocketAddress implements Comparable {
     public static DirectSocketAddress merge(DirectSocketAddress s1, 
             DirectSocketAddress s2) {
         
-        byte [] UUID = s1.UUID;
+        byte [] UUID = s1.uuid;
         
-        if (s1.UUID == null) {
-            UUID = s2.UUID;            
-        } else if (s2.UUID != null) {               
-            if (!Arrays.equals(s1.UUID, s2.UUID)) { 
+        if (s1.uuid == null) {
+            UUID = s2.uuid;            
+        } else if (s2.uuid != null) {               
+            if (!Arrays.equals(s1.uuid, s2.uuid)) { 
                 throw new IllegalArgumentException("Cannot merge two " +
                     "addresses with different UUIDs!");
             } 

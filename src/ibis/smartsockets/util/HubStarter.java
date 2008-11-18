@@ -6,7 +6,7 @@ import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.hub.Hub;
 
 import java.io.IOException;
-
+import java.util.Arrays;
 
 public class HubStarter {
 
@@ -102,7 +102,9 @@ public class HubStarter {
                 h = new Hub(p);
                 h.addHubs(hubs);
 
-                System.out.println("Hub running on: " + h.getHubAddress());            
+                DirectSocketAddress address = h.getHubAddress();
+                
+                System.out.println("Hub " + address.getUUID() + " running on: " + h.getHubAddress());            
 
             } catch (IOException e) {
                 System.err.println("Oops: failed to start hub");

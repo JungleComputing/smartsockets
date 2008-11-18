@@ -105,8 +105,6 @@ public class DirectSocketFactory {
     
     private DirectSocketFactory(TypedProperties p) {
         
-        //properties = p;
-    
         DEFAULT_BACKLOG = p.getIntProperty(SmartSocketsProperties.DIRECT_BACKLOG, 100);
         DEFAULT_TIMEOUT = p.getIntProperty(SmartSocketsProperties.DIRECT_TIMEOUT, 5000);
         DEFAULT_LOCAL_TIMEOUT = p.getIntProperty(SmartSocketsProperties.DIRECT_LOCAL_TIMEOUT, 1000);
@@ -192,6 +190,11 @@ public class DirectSocketFactory {
             } else {
                 completeAddress = localAddress;
             }
+        } else if (p.booleanProperty(SmartSocketsProperties.UUID_REQUIRED, false)) { 
+        	
+        	byte [] uuid = NetworkUtils.getUUID();
+    
+        	completeAddress = IPAddressSet.merge(localAddress, uuid);    
         } else {
             completeAddress = localAddress;
         }

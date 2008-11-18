@@ -37,6 +37,8 @@ public class SmartSocketsProperties {
     public static final String PORT_RANGE = PREFIX + "port.range";    
     public static final String BACKLOG    = PREFIX + "backlog";
    
+    public static final String UUID_REQUIRED = PREFIX + "uuid.required";
+    
     public static final String CONNECT_TIMEOUT = PREFIX + "timeout.connect";  
     public static final String ACCEPT_TIMEOUT  = PREFIX + "timeout.accept";      
     
@@ -188,7 +190,8 @@ public class SmartSocketsProperties {
 
     protected static final Logger logger = 
         LoggerFactory.getLogger("ibis.smartsockets.properties");
-    
+
+	
     private static TypedProperties getPropertyFile(String file) {
 
         if (logger.isInfoEnabled()) { 

@@ -4,7 +4,7 @@ import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.hub.Connections;
-import ibis.smartsockets.hub.servicelink.ServiceLinkProtocol;
+import ibis.smartsockets.hub.SmartSocketsProtocol;
 import ibis.smartsockets.hub.state.AddressAsStringSelector;
 import ibis.smartsockets.hub.state.ClientsByTagAsStringSelector;
 import ibis.smartsockets.hub.state.DetailsSelector;
@@ -40,9 +40,9 @@ public class ClientConnection extends MessageForwardingConnection {
     
     public ClientConnection(DirectSocketAddress clientAddress, DirectSocket s, 
             DataInputStream in, DataOutputStream out, Connections connections,
-            HubList hubs, VirtualConnections vcs) {
+            HubList hubs) {
      
-        super(s, in, out, connections, hubs, vcs, false, 
+        super(s, in, out, connections, hubs, false, 
                 "Client(" + clientAddress.toString() + ")");        
      
         this.clientAddress = clientAddress;        
@@ -72,9 +72,7 @@ public class ClientConnection extends MessageForwardingConnection {
    
         connections.removeClient(clientAddress);
         DirectSocketFactory.close(s, out, in);      
-        
-        // Close all connections that have an endpoint at our side
-        closeAllVirtualConnections(uniquePrefix);
+       
     } 
     
     private void handleListHubs() throws IOException { 
@@ -92,7 +90,7 @@ public class ClientConnection extends MessageForwardingConnection {
         LinkedList<String> result = as.getResult();
         
         synchronized (out) {
-            out.write(ServiceLinkProtocol.INFO_REPLY);           
+            out.write(SmartSocketsProtocol.INFO_REPLY);           
             out.writeInt(id);            
             out.writeInt(result.size());
         
@@ -119,7 +117,7 @@ public class ClientConnection extends MessageForwardingConnection {
         LinkedList<String> result = as.getResult();
         
         synchronized (out) {
-            out.write(ServiceLinkProtocol.INFO_REPLY);           
+            out.write(SmartSocketsProtocol.INFO_REPLY);           
             out.writeInt(id);            
             out.writeInt(result.size());
             
@@ -158,7 +156,7 @@ public class ClientConnection extends MessageForwardingConnection {
         }
       
         synchronized (out) {
-            out.write(ServiceLinkProtocol.INFO_REPLY);           
+            out.write(SmartSocketsProtocol.INFO_REPLY);           
             out.writeInt(id);            
             out.writeInt(result.size());
 
@@ -186,7 +184,7 @@ public class ClientConnection extends MessageForwardingConnection {
         LinkedList<String> result = css.getResult();
 
         synchronized (out) {
-            out.write(ServiceLinkProtocol.INFO_REPLY);           
+            out.write(SmartSocketsProtocol.INFO_REPLY);           
             out.writeInt(id);            
             out.writeInt(result.size());
 
@@ -219,7 +217,7 @@ public class ClientConnection extends MessageForwardingConnection {
         LinkedList<String> result = ds.getResult();
         
         synchronized (out) {
-            out.write(ServiceLinkProtocol.INFO_REPLY);           
+            out.write(SmartSocketsProtocol.INFO_REPLY);           
             out.writeInt(id);            
             out.writeInt(result.size());
 
@@ -250,13 +248,13 @@ public class ClientConnection extends MessageForwardingConnection {
         HubDescription localHub = knownHubs.getLocalDescription();
         
         synchronized (out) {
-            out.write(ServiceLinkProtocol.PROPERTY_ACK);           
+            out.write(SmartSocketsProtocol.PROPERTY_ACK);           
             out.writeInt(id);            
             
             if (localHub.addService(clientAddress, tag, info)) { 
-                out.writeInt(ServiceLinkProtocol.PROPERTY_ACCEPTED);
+                out.writeInt(SmartSocketsProtocol.PROPERTY_ACCEPTED);
             } else { 
-                out.writeInt(ServiceLinkProtocol.PROPERTY_REJECTED);
+                out.writeInt(SmartSocketsProtocol.PROPERTY_REJECTED);
             }
             
             out.flush();
@@ -277,13 +275,13 @@ public class ClientConnection extends MessageForwardingConnection {
         HubDescription localHub = knownHubs.getLocalDescription();
         
         synchronized (out) {
-            out.write(ServiceLinkProtocol.PROPERTY_ACK);           
+            out.write(SmartSocketsProtocol.PROPERTY_ACK);           
             out.writeInt(id);            
             
             if (localHub.updateService(clientAddress, tag, info)) {
-                out.writeInt(ServiceLinkProtocol.PROPERTY_ACCEPTED);
+                out.writeInt(SmartSocketsProtocol.PROPERTY_ACCEPTED);
             } else { 
-                out.writeInt(ServiceLinkProtocol.PROPERTY_REJECTED);
+                out.writeInt(SmartSocketsProtocol.PROPERTY_REJECTED);
             }
             
             out.flush();
@@ -303,13 +301,13 @@ public class ClientConnection extends MessageForwardingConnection {
         HubDescription localHub = knownHubs.getLocalDescription();
         
         synchronized (out) {
-            out.write(ServiceLinkProtocol.PROPERTY_ACK);            
+            out.write(SmartSocketsProtocol.PROPERTY_ACK);            
             out.writeInt(id);
             
             if (localHub.removeService(clientAddress, tag)) {
-                out.writeInt(ServiceLinkProtocol.PROPERTY_ACCEPTED);
+                out.writeInt(SmartSocketsProtocol.PROPERTY_ACCEPTED);
             } else { 
-                out.writeInt(ServiceLinkProtocol.PROPERTY_REJECTED);
+                out.writeInt(SmartSocketsProtocol.PROPERTY_REJECTED);
             }                
             
             out.flush();
@@ -325,7 +323,7 @@ public class ClientConnection extends MessageForwardingConnection {
         try { 
             switch (opcode) { 
             
-            case ServiceLinkProtocol.HUBS:
+            case SmartSocketsProtocol.HUBS:
                 if (reqlogger.isDebugEnabled()) {
                     reqlogger.debug("Connection " + clientAddress + " requests " 
                             + "hubs");
@@ -333,7 +331,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 handleListHubs();
                 return true;
 
-            case ServiceLinkProtocol.HUB_DETAILS:
+            case SmartSocketsProtocol.HUB_DETAILS:
                 if (reqlogger.isDebugEnabled()) {
                     reqlogger.debug("Connection " + clientAddress + " requests " 
                             + "hub details");
@@ -341,7 +339,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 handleListHubDetails();
                 return true;
                 
-            case ServiceLinkProtocol.CLIENTS_FOR_HUB:
+            case SmartSocketsProtocol.CLIENTS_FOR_HUB:
                 if (reqlogger.isDebugEnabled()) {
                     reqlogger.debug("Connection " + clientAddress + " requests" 
                             + " local clients");
@@ -349,7 +347,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 handleListClientsForHub();
                 return true;
             
-            case ServiceLinkProtocol.ALL_CLIENTS:
+            case SmartSocketsProtocol.ALL_CLIENTS:
                 if (reqlogger.isDebugEnabled()) {
                     reqlogger.debug("Connection " + clientAddress + " requests" 
                             + " all clients");
@@ -357,7 +355,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 handleListClients();
                 return true;
             
-            case ServiceLinkProtocol.DIRECTION:
+            case SmartSocketsProtocol.DIRECTION:
                 if (reqlogger.isDebugEnabled()) {
                     reqlogger.debug("Connection " + clientAddress + " requests" 
                             + " direction to other client");
@@ -365,7 +363,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 handleGetDirectionsToClient();
                 return true;
             
-            case ServiceLinkProtocol.REGISTER_PROPERTY:
+            case SmartSocketsProtocol.REGISTER_PROPERTY:
                 if (reglogger.isDebugEnabled()) {
                     reglogger.debug("Connection " + clientAddress + " requests" 
                             + " info registration");
@@ -373,7 +371,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 registerProperty();
                 return true;
             
-            case ServiceLinkProtocol.UPDATE_PROPERTY:
+            case SmartSocketsProtocol.UPDATE_PROPERTY:
                 if (reglogger.isDebugEnabled()) {
                     reglogger.debug("Connection " + clientAddress + " requests" 
                             + " info update");
@@ -381,7 +379,7 @@ public class ClientConnection extends MessageForwardingConnection {
                 updateProperty();
                 return true;
             
-            case ServiceLinkProtocol.REMOVE_PROPERTY:
+            case SmartSocketsProtocol.REMOVE_PROPERTY:
                 if (reglogger.isDebugEnabled()) {
                     reglogger.debug("Connection " + clientAddress + " requests" 
                             + " info removal");

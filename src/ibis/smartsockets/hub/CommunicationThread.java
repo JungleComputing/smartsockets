@@ -2,13 +2,12 @@ package ibis.smartsockets.hub;
 
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
-import ibis.smartsockets.hub.connections.VirtualConnections;
+
 import ibis.smartsockets.hub.state.HubList;
 import ibis.smartsockets.hub.state.StateCounter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 abstract class CommunicationThread implements Runnable {
 
@@ -23,7 +22,7 @@ abstract class CommunicationThread implements Runnable {
     protected final Connections connections;     
     
     protected final HubList knownHubs;
-    protected final VirtualConnections virtualConnections;
+  
     protected final DirectSocketFactory factory;    
     
     protected DirectSocketAddress local;
@@ -33,14 +32,13 @@ abstract class CommunicationThread implements Runnable {
     private boolean end = false;
     
     protected CommunicationThread(String name, StateCounter state, 
-            Connections connections, HubList knownHubs, VirtualConnections vcs, 
+            Connections connections, HubList knownHubs, 
             DirectSocketFactory factory) {
 
         this.name = name;
         this.state = state;
         this.connections = connections;
         this.knownHubs = knownHubs;
-        this.virtualConnections = vcs;
         this.factory = factory;        
     }
     

@@ -4,7 +4,7 @@ import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
 import ibis.smartsockets.direct.IPAddressSet;
-import ibis.smartsockets.hub.ConnectionProtocol;
+import ibis.smartsockets.hub.SmartSocketsProtocol;
 import ibis.smartsockets.util.TypedProperties;
 import ibis.smartsockets.virtual.NonFatalIOException;
 import ibis.smartsockets.virtual.VirtualServerSocket;
@@ -453,7 +453,7 @@ public class Splice extends AbstractDirectModule {
             local = s.getLocalPort();
             
             out = s.getOutputStream();
-            out.write(ConnectionProtocol.GET_SPLICE_INFO);
+            out.write(SmartSocketsProtocol.GET_SPLICE_INFO);
             out.flush();
             
             in = new DataInputStream(s.getInputStream());            
