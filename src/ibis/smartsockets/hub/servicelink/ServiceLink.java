@@ -780,7 +780,7 @@ public class ServiceLink implements Runnable {
             }
         }
     }
-
+    
     public void send(DirectSocketAddress target, DirectSocketAddress targetHub,
             String targetModule, int opcode, byte[][] message) {
 

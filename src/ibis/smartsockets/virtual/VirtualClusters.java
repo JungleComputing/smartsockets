@@ -1,7 +1,6 @@
 package ibis.smartsockets.virtual;
 
 import ibis.smartsockets.SmartSocketsProperties;
-import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.util.TypedProperties;
 import ibis.smartsockets.virtual.modules.ConnectModule;
 
@@ -182,18 +181,9 @@ public class VirtualClusters {
                 
         // Get the cluster of the target machine
         String c = target.cluster();
-               
-        if (c == null || c.length() == 0) {
-            // No cluster defined... let's use the hub address as a cluster.
-            DirectSocketAddress hub = target.hub();
-            
-            if (hub != null) {             
-                c = hub.toString();
-            }
-        }
         
         if (c == null || c.length() == 0) {
-            // Handle 'orphan' nodes (without cluster or hub) seperately...
+            // Handle 'orphan' nodes (without cluster) seperately...
             ConnectModule[] result = getSingleNodeOrder(target);
         
             if (result == null) { 
@@ -244,15 +234,6 @@ public class VirtualClusters {
         String c = target.cluster();
         
         ClusterDefinition d = null;
-        
-        if (c == null || c.length() == 0) {
-            // If no order is defined we use the hub. 
-            DirectSocketAddress hub = target.hub();
-            
-            if (hub != null) { 
-                c = hub.toString();
-            }
-        } 
         
         if (c == null || c.length() == 0) {
             // Handle 'orphan' nodes seperately...

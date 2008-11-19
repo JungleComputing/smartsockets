@@ -214,7 +214,7 @@ public class VirtualSocketFactory {
         loadClusterDefinitions();
 
         localVirtualAddress = new VirtualSocketAddress(myAddresses, 0,
-                hubAddress, clusters.localCluster());
+                clusters.localCluster());
 
         localVirtualAddressAsString = localVirtualAddress.toString();
         
@@ -396,9 +396,6 @@ public class VirtualSocketFactory {
         try {
             serviceLink = ServiceLink.getServiceLink(properties, hubs,
                     myAddresses);
-
-            hubAddress = serviceLink.getAddress();
-            
         } catch (Exception e) {
             logger.warn("Failed to connect service link to hub!", e);
         
@@ -1357,7 +1354,7 @@ public class VirtualSocketFactory {
             }
 
             VirtualSocketAddress a = new VirtualSocketAddress(myAddresses,
-                    port, hubAddress, clusters.localCluster());
+                    port, clusters.localCluster());
 
             VirtualServerSocket vss = new VirtualServerSocket(this, a, port,
                     backlog, DEFAULT_ACCEPT_TIMEOUT, properties);
@@ -1381,7 +1378,16 @@ public class VirtualSocketFactory {
     }
 
     public DirectSocketAddress getLocalHub() {
-        return hubAddress;
+
+    	if (serviceLink != null) { 
+    		try {
+				return serviceLink.getAddress();
+			} catch (IOException e) {
+				logger.warn("Failed to retrieve hub from servicelink!", e);
+			}
+    	} 
+ 
+    	return null;
     }
 
     public void addHubs(DirectSocketAddress... hubs) {

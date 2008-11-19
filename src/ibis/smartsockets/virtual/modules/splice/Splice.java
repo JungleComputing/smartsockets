@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-
 public class Splice extends AbstractDirectModule {
     
     protected static final byte ACCEPT              = 1;
