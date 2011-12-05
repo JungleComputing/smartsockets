@@ -110,7 +110,10 @@ public class HubConnection extends MessageForwardingConnection {
             peer.setContactTimeStamp(false);
 
         } catch (Exception e) {
-            goslogger.warn("Unhandled exception in HubConnection!!", e);
+            // goslogger.warn("Unhandled exception in HubConnection!!", e); 
+            // Really? There is a disconnect below. Made this a "info", so that
+            // not everybody hears this. --Ceriel 
+            goslogger.info("Unhandled exception in HubConnection!!", e);
             disconnect();
         }
 
