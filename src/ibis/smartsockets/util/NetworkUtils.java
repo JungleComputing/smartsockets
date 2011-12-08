@@ -306,7 +306,8 @@ public class NetworkUtils {
      * @return the String representation of the address.
      */
     public static String ipToString(InetAddress ad) {
-        return ad.getHostAddress();
+	// Could this give spaces? I don't know. Protect ... --Ceriel
+        return ad.getHostAddress().trim();
     }
 
     /**

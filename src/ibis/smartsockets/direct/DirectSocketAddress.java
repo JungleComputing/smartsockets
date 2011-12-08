@@ -1154,7 +1154,8 @@ public class DirectSocketAddress extends SocketAddress
 
         while (st.hasMoreTokens()) {
 
-            String s = st.nextToken();
+            // Protect against space (don't know where it came from) --Ceriel
+            String s = st.nextToken().trim();
 
             // System.out.println("Read: " + s);
 
