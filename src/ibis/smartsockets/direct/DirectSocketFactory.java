@@ -718,31 +718,46 @@ public class DirectSocketFactory {
         conn.connect(null, timeout, timeout);
 
         boolean isAuthenticated = false;
+        
+        // First try through ssh agent.
 
-        for (char[] key : privateKeys) {
+        try {
+            isAuthenticated = conn.authenticateWithPublicKey(user);
+        } catch (IOException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Attempting authentication of SSH connection to "
-                        + host);
+                logger.debug("Failed to create SSH connection to "
+                        + NetworkUtils.ipToString(target.getAddress())
+                        + ":" + target.getPort() + " after "
+                        + (System.currentTimeMillis() - start) + " ms.", e);
             }
-
-            try {
-                isAuthenticated = conn.authenticateWithPublicKey(user, key,
-                        keyFilePass);
-            } catch (IOException e) {
+        }
+        
+        if (! isAuthenticated) {
+            for (char[] key : privateKeys) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Failed to create SSH connection to "
-                            + NetworkUtils.ipToString(target.getAddress())
-                            + ":" + target.getPort() + " after "
-                            + (System.currentTimeMillis() - start) + " ms.", e);
+                    logger.debug("Attempting authentication of SSH connection to "
+                            + host);
                 }
-            }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Authentication result " + isAuthenticated);
-            }
+                try {
+                    isAuthenticated = conn.authenticateWithPublicKey(user, key,
+                            keyFilePass);
+                } catch (IOException e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Failed to create SSH connection to "
+                                + NetworkUtils.ipToString(target.getAddress())
+                                + ":" + target.getPort() + " after "
+                                + (System.currentTimeMillis() - start) + " ms.", e);
+                    }
+                }
 
-            if (isAuthenticated) {
-                break;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Authentication result " + isAuthenticated);
+                }
+
+                if (isAuthenticated) {
+                    break;
+                }
             }
         }
 

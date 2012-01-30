@@ -77,8 +77,10 @@ public class Simple {
             File keyfile = new File(filename);
             String keyfilePass = "joespass"; // will be ignored if not needed
 
-            boolean isAuthenticated = conn.authenticateWithPublicKey(user,
-                    keyfile, keyfilePass);
+            boolean isAuthenticated = conn.authenticateWithPublicKey(user);
+            if (! isAuthenticated) {
+        	    isAuthenticated = conn.authenticateWithPublicKey(user, keyfile, keyfilePass);
+            }
 
             if (isAuthenticated == false)
                 throw new IOException("Authentication failed.");
