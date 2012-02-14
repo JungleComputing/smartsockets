@@ -1156,6 +1156,13 @@ public class DirectSocketAddress extends SocketAddress
 
             // Protect against space (don't know where it came from) --Ceriel
             String s = st.nextToken().trim();
+            
+            // Accept empty string here, sometimes there are two separators!
+            // (for instance, the sequence }/ when an external address is specified.
+            // --Ceriel
+            if (s.equals("")) {
+                continue;
+            }
 
             // System.out.println("Read: " + s);
 
