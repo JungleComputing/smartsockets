@@ -414,6 +414,12 @@ public final class SmartSocketsProperties {
     public static final String SSH_OUT = SSH_PREFIX + "out";
 
     /**
+     * The port used by the local SSH daemon (default = 22)
+     * @see ibis.smartsockets.direct.DirectSocketFactory
+     */
+    public static final String SSH_PORT = SSH_PREFIX + "port";
+    
+    /**
      * Force the DirectSocketFactory to only use SSH for outgoing
      * connections (false).
      * @see ibis.smartsockets.direct.DirectSocketFactory
@@ -663,6 +669,7 @@ public final class SmartSocketsProperties {
 
             SSH_OUT,                "false",
             SSH_IN,                 "false",
+            SSH_PORT,               "22",
 
             NIO,                    "false",
             DIRECT_SEND_BUFFER,     "-1",

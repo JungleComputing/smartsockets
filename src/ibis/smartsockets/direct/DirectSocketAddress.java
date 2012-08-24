@@ -48,8 +48,11 @@ public class DirectSocketAddress extends SocketAddress
 
     private static final char EXTERNAL_END = '}';
 
+    private static final char SSH_USER_PORT_SEPERATOR = '+';
+
+    
     // Should contain all of the above!
-    private static final String SEPARATORS = "{}-/~#";
+    private static final String SEPARATORS = "{}-/~#+";
 
     private transient InetSocketAddress[] externalAds;
 
@@ -60,7 +63,8 @@ public class DirectSocketAddress extends SocketAddress
     private transient byte[] UUID;
 
     // Unfortunately, this is the least that is required for SSH-tunneling...
-    private transient String user;
+    private transient String sshUser;
+    private transient int sshPort; 
 
     private transient int hashCode = 0;
 
@@ -74,7 +78,7 @@ public class DirectSocketAddress extends SocketAddress
 
     private DirectSocketAddress(InetSocketAddress[] externalAds,
             InetSocketAddress[] publicAds, InetSocketAddress[] privateAds,
-            byte[] UUID, String user) {
+            byte[] UUID, String user, int sshPort) {
 
         this.externalAds = (externalAds == null ? new InetSocketAddress[0]
                 : externalAds);
@@ -83,7 +87,8 @@ public class DirectSocketAddress extends SocketAddress
         this.privateAds = (privateAds == null ? new InetSocketAddress[0]
                 : privateAds);
         this.UUID = UUID;
-        this.user = user;
+        this.sshUser = user;
+        this.sshPort = sshPort;
     }
 
     /**
@@ -123,7 +128,7 @@ public class DirectSocketAddress extends SocketAddress
             }
 
             if (userLen > 0) {
-                user = new String(coded, index, userLen);
+                sshUser = new String(coded, index, userLen);
             }
         } catch (UnknownHostException e) {
             // pass through
@@ -282,8 +287,8 @@ public class DirectSocketAddress extends SocketAddress
                 len += UUID.length;
             }
 
-            if (user != null && user.length() > 0) {
-                codedUser = user.getBytes();
+            if (sshUser != null && sshUser.length() > 0) {
+                codedUser = sshUser.getBytes();
                 len += codedUser.length;
             }
 
@@ -308,7 +313,7 @@ public class DirectSocketAddress extends SocketAddress
                 index += UUID.length;
             }
 
-            if (user != null && user.length() > 0) {
+            if (sshUser != null && sshUser.length() > 0) {
                 System.arraycopy(codedUser, 0, codedForm, index,
                         codedUser.length);
             }
@@ -491,14 +496,23 @@ public class DirectSocketAddress extends SocketAddress
     }
 
     /**
-     * Returns the username of the DirectSocketAddress.
+     * Returns the SSH username of the DirectSocketAddress.
      *
-     * @return the username.
+     * @return the SSH username.
      */
     public String getUser() {
-        return user;
+        return sshUser;
     }
 
+    /**
+     * Returns the SSH port of the DirectSocketAddress.
+     *
+     * @return the SSH port.
+     */
+    public int getSSHPort() {
+        return sshPort;
+    }
+    
     /*
      * (non-Javadoc)
      *
@@ -662,9 +676,11 @@ public class DirectSocketAddress extends SocketAddress
                 b.append(NetworkUtils.UUIDToString(UUID));
             }
 
-            if (user != null && user.length() > 0) {
+            if (sshUser != null && sshUser.length() > 0) {
                 b.append(USER_SEPERATOR);
-                b.append(user);
+                b.append(sshUser);
+                b.append(SSH_USER_PORT_SEPERATOR);
+                b.append(sshPort);
             }
 
             toStringCache = b.toString();
@@ -872,10 +888,10 @@ public class DirectSocketAddress extends SocketAddress
 
         if (NetworkUtils.isLocalAddress(a.getAddress())) {
             return new DirectSocketAddress(null, null,
-                    new InetSocketAddress[] { a }, null, null);
+                    new InetSocketAddress[] { a }, null, null, -1);
         } else {
             return new DirectSocketAddress(null, new InetSocketAddress[] { a },
-                    null, null, null);
+                    null, null, null, -1);
         }
     }
 
@@ -893,21 +909,21 @@ public class DirectSocketAddress extends SocketAddress
      *                The port number.
      */
     public static DirectSocketAddress getByAddress(IPAddressSet a, int port,
-            String user) throws UnknownHostException {
+            String user, int sshPort) throws UnknownHostException {
 
-        return getByAddress(null, null, a, new int[] { port }, user);
+        return getByAddress(null, null, a, new int[] { port }, user, sshPort);
     }
 
     public static DirectSocketAddress getByAddress(IPAddressSet a, int port)
             throws UnknownHostException {
-        return getByAddress(null, null, a, new int[] { port }, null);
+        return getByAddress(null, null, a, new int[] { port }, null, -1);
     }
 
     public static DirectSocketAddress getByAddress(IPAddressSet external,
-            int externalPort, IPAddressSet other, int otherPort, String user) {
+            int externalPort, IPAddressSet other, int otherPort, String user, int sshPort) {
 
         return getByAddress(external, new int[] { externalPort }, other,
-                new int[] { otherPort }, user);
+                new int[] { otherPort }, user, sshPort);
     }
 
     /**
@@ -934,7 +950,7 @@ public class DirectSocketAddress extends SocketAddress
      */
     public static DirectSocketAddress getByAddress(IPAddressSet external,
             int[] externalPorts, IPAddressSet other, int[] otherPorts,
-            String user) {
+            String user, int sshPort) {
 
         if (other == null) {
             other = IPAddressSet.getLocalHost();
@@ -1016,7 +1032,7 @@ public class DirectSocketAddress extends SocketAddress
         }
 
         return new DirectSocketAddress(extern, publicAds, privateAds,
-                other.UUID, user);
+                other.UUID, user, sshPort);
     }
 
     private static InetSocketAddress[] resize(InetSocketAddress[] orig, int add) {
@@ -1130,17 +1146,19 @@ public class DirectSocketAddress extends SocketAddress
         boolean readingExternal = false;
         boolean readingPort = false;
         boolean readingUUID = false;
-        boolean readingUser = false;
-
+        boolean readingSSHUser = false;
+        boolean readingSSHPort = false;
+        
         boolean allowExternalStart = true;
         boolean allowExternalEnd = false;
         boolean allowAddress = true;
         boolean allowSlash = false;
-        boolean allowDash = false;
+        boolean allowDash = false;       
         boolean allowDone = false;
-        boolean allowUser = false;
+        boolean allowSSHUser = false;
+        boolean allowStar = false;       
         boolean allowUUID = false;
-
+        
         InetSocketAddress[] externalAds = null;
         InetSocketAddress[] publicAds = null;
         InetSocketAddress[] privateAds = null;
@@ -1148,6 +1166,7 @@ public class DirectSocketAddress extends SocketAddress
         byte[] UUID = null;
 
         String user = null;
+        int sshPort = -1; // -1 is the default ssh port!
 
         LinkedList<InetAddress> currentGlobal = new LinkedList<InetAddress>();
         LinkedList<InetAddress> currentLocal = new LinkedList<InetAddress>();
@@ -1244,24 +1263,36 @@ public class DirectSocketAddress extends SocketAddress
 
                     allowUUID = false;
                     allowDone = false;
-                    allowUser = false;
+                    allowSSHUser = false;
                     readingUUID = true;
                     break;
 
                 case USER_SEPERATOR:
 
-                    if (!allowUser) {
+                    if (!allowSSHUser) {
                         throw new MalformedAddressException("Unexpected "
                                 + USER_SEPERATOR + " in address(" + addressPort
                                 + ")");
                     }
 
                     allowDone = false;
-                    allowUser = false;
+                    allowSSHUser = false;
                     allowUUID = false;
-                    readingUser = true;
+                    readingSSHUser = true;
                     break;
 
+                case SSH_USER_PORT_SEPERATOR: 
+
+                	if (!allowStar) {
+                        throw new MalformedAddressException("Unexpected "
+                                + SSH_USER_PORT_SEPERATOR + " in address(" + addressPort
+                                + ")");
+                    }
+
+                	allowDone = false;
+                	readingSSHPort = true;
+                    break; 
+                    
                 default:
                     // should never happen ?
                     throw new MalformedAddressException(
@@ -1277,15 +1308,30 @@ public class DirectSocketAddress extends SocketAddress
 
                 allowSlash = false;
                 allowDone = true;
-                allowUser = true;
+                allowSSHUser = true;
 
-            } else if (readingUser) {
+            } else if (readingSSHUser) {
 
                 user = s;
-                readingUser = false;
+                readingSSHUser = false;
                 allowSlash = false;
                 allowDone = true;
+                allowStar = true;
+                
+            } else if (readingSSHPort) {
 
+            	int port = Integer.parseInt(s);
+
+                // ... do a sanity check on the port value ...
+                if (port <= 0 || port > 65535) {
+                    throw new MalformedAddressException("SSH port out of range: "
+                            + port);
+                }
+
+                sshPort = port;
+                readingSSHPort = false;
+                allowDone = true;
+                
             } else if (readingPort) {
 
                 // This should complete a group of addresses. More may folow
@@ -1311,7 +1357,7 @@ public class DirectSocketAddress extends SocketAddress
                     allowExternalEnd = true;
                 } else {
                     allowDone = true;
-                    allowUser = true;
+                    allowSSHUser = true;
                     allowUUID = true;
                 }
 
@@ -1349,12 +1395,12 @@ public class DirectSocketAddress extends SocketAddress
         }
 
         return new DirectSocketAddress(externalAds, publicAds, privateAds,
-                UUID, user);
+                UUID, user, sshPort);
     }
 
     public static DirectSocketAddress getByAddress(String host, int port)
             throws UnknownHostException {
-        return getByAddress(IPAddressSet.getFromString(host), port, null);
+        return getByAddress(IPAddressSet.getFromString(host), port, null, -1);
     }
 
     private static InetSocketAddress[] merge(InetSocketAddress[] a,
@@ -1399,26 +1445,35 @@ public class DirectSocketAddress extends SocketAddress
             }
         }
 
-        String user = s1.user;
+        String user = null; 
+        int sshPort = -1;
+        
+        if (s1.sshUser == null || s1.sshUser.length() == 0) {
+            user = s2.sshUser;
+            sshPort = s2.sshPort;
+        } else if (s2.sshUser == null || s2.sshUser.length() == 0) {
+            user = s1.sshUser;
+            sshPort = s1.sshPort;
+        } else {
 
-        if (s1.user == null || user.length() == 0) {
-            user = s2.user;
-        } else if (s2.user != null && s2.user.length() > 0) {
-
-            if (!s1.user.equals(s2.user)) {
+            if (!s1.sshUser.equals(s2.sshUser)) {
                 throw new IllegalArgumentException("Cannot merge two "
                         + "addresses with different user names!");
             }
 
+            if (s1.sshPort != s2.sshPort) { 
+                throw new IllegalArgumentException("Cannot merge two "
+                        + "addresses with different ssh ports!!");
+            }
+            
             // They are equal...
-            user = s2.user;
-        } else {
-            user = s2.user;
-        }
+            user = s1.sshUser;
+            sshPort = s1.sshPort;
+        } 
 
         return new DirectSocketAddress(merge(s1.externalAds, s2.externalAds),
                 merge(s1.publicAds, s2.publicAds), merge(s1.privateAds,
-                        s2.privateAds), UUID, user);
+                        s2.privateAds), UUID, user, sshPort);
     }
 
     /**

@@ -82,9 +82,10 @@ public class DirectSocketFactory {
 
     private final int defaultSendBuffer;
 
-    // User for SSH tunneling
+    // User and port for SSH tunneling
     private final String user;
-
+    private final int sshPort;
+    
     private final char[][] privateKeys;
 
     private final boolean haveFirewallRules;
@@ -129,7 +130,8 @@ public class DirectSocketFactory {
                 false);
 
         String username = null;
-
+        sshPort = p.getIntProperty(SmartSocketsProperties.SSH_PORT, 22); 
+        
         if (allowSSHIn) {
             username = System.getProperty("user.name");
 
@@ -140,7 +142,7 @@ public class DirectSocketFactory {
             }
 
             if (username != null && (username.equals("") || username.equals("?"))) {
-                // If $USER also returns a strang value, we give up. This will disable
+                // If $USER also returns a strange value, we give up. This will disable
                 // SSH tunneling
                 username = null;
             }
@@ -251,7 +253,7 @@ public class DirectSocketFactory {
         }
 
         DirectSocketAddress tmp = DirectSocketAddress.getByAddress(
-                externalAddress, 1, localAddress, 1, user);
+                externalAddress, 1, localAddress, 1, user, sshPort);
 
         altCompleteAddressInBytes = toBytes(5, tmp, preference.getNetworkName());
 
@@ -629,10 +631,8 @@ public class DirectSocketFactory {
             if (realAddress == null) {
 
                 if (logger.isInfoEnabled()) {
-                    logger
-                            .info("Handshake failed during SSH connection setup to "
-                                    + NetworkUtils.ipToString(target
-                                            .getAddress())
+                    logger.info("Handshake failed during SSH connection setup to "
+                                    + NetworkUtils.ipToString(target.getAddress())
                                     + ":"
                                     + target.getPort()
                                     + " after "
@@ -657,7 +657,7 @@ public class DirectSocketFactory {
 
                 // TODO: is this correct ?
                 DirectSocketAddress a = DirectSocketAddress.getByAddress(
-                        externalAddress, 1, localAddress, 1, null);
+                        externalAddress, 1, localAddress, 1, null, 22);
 
                 return new DirectSSHSocket(a, realAddress, in, out, lsf);
             }
@@ -694,7 +694,7 @@ public class DirectSocketFactory {
 
     private DirectSocket attemptSSHConnection(DirectSocketAddress sas,
             InetSocketAddress target, int timeout, int localPort,
-            boolean mayBlock, String user, byte[] userOut, byte[] userIn,
+            boolean mayBlock, String user, int sshPort, byte[] userOut, byte[] userIn,
             boolean check) throws IOException {
 
         DirectSocket result = null;
@@ -713,7 +713,7 @@ public class DirectSocketFactory {
             }
         }
 
-        Connection conn = new Connection(host);
+        Connection conn = new Connection(host, sshPort);
         //conn.enableDebugging(true, null);
         conn.connect(null, timeout, timeout);
 
@@ -893,7 +893,7 @@ public class DirectSocketFactory {
 
             // TODO: get real port here ? How about the UUID ?
             DirectSocketAddress a = DirectSocketAddress.getByAddress(
-                    externalAddress, 1, localAddress, 1, null);
+                    externalAddress, 1, localAddress, 1, null, 22);
 
             DirectSocket r = new DirectSimpleSocket(a, realAddress, in, out, s);
 
@@ -1187,7 +1187,7 @@ public class DirectSocketFactory {
             // forwarding, so just return the server socket
             DirectSocketAddress a = DirectSocketAddress.getByAddress(
                     externalAddress, ss.getLocalPort(), localAddress, ss
-                            .getLocalPort(), user);
+                            .getLocalPort(), user, sshPort);
 
             DirectServerSocket smss = new DirectServerSocket(a, ss, preference);
 
@@ -1208,7 +1208,7 @@ public class DirectSocketFactory {
                 // It's OK, so return the socket.
                 DirectSocketAddress a = DirectSocketAddress.getByAddress(
                         externalAddress, ss.getLocalPort(), localAddress, ss
-                                .getLocalPort(), user);
+                                .getLocalPort(), user, sshPort);
 
                 DirectServerSocket smss = new DirectServerSocket(a, ss,
                         preference);
@@ -1248,7 +1248,7 @@ public class DirectSocketFactory {
 
             local = DirectSocketAddress.getByAddress(externalAddress,
                     new int[] { ePort }, localAddress, new int[] { ss
-                            .getLocalPort() }, user);
+                            .getLocalPort() }, user, sshPort);
 
         } catch (Exception e) {
 
@@ -1267,7 +1267,7 @@ public class DirectSocketFactory {
             }
 
             local = DirectSocketAddress.getByAddress(localAddress, ss
-                    .getLocalPort(), user);
+                    .getLocalPort(), user, sshPort);
         }
 
         DirectServerSocket smss = new DirectServerSocket(local, ss, preference);
@@ -1645,7 +1645,7 @@ public class DirectSocketFactory {
 
             if (!FORCE_SSH_OUT) {
                 result = loopOverOptions(target, sas, localPort, partialTime,
-                        sendBuffer, receiveBuffer, null, userOut, userIn,
+                        sendBuffer, receiveBuffer, null, 22, userOut, userIn,
                         /* timing */null, exceptions);
             }
 
@@ -1668,8 +1668,8 @@ public class DirectSocketFactory {
                 }
 
                 result = loopOverOptions(target, sas, localPort, partialTime,
-                        sendBuffer, receiveBuffer, target.getUser(), userOut,
-                        userIn, /* timing */null, exceptions);
+                        sendBuffer, receiveBuffer, target.getUser(), target.getSSHPort(), 
+                        userOut, userIn, /* timing */null, exceptions);
 
                 time = (int) (System.currentTimeMillis() - starttime);
             }
@@ -1710,7 +1710,7 @@ public class DirectSocketFactory {
 
     private DirectSocket loopOverOptions(DirectSocketAddress target,
             InetSocketAddress[] sas, int localPort, int timeout,
-            int sendBuffer, int receiveBuffer, String user, byte[] userOut,
+            int sendBuffer, int receiveBuffer, String user, int sshPort, byte[] userOut,
             byte[] userIn, long[] timing,
             LinkedList<NestedIOExceptionData> exceptions)
             throws FirewallException {
@@ -1746,7 +1746,7 @@ public class DirectSocketFactory {
             try {
                 if (user != null) {
                     result = attemptSSHConnection(target, sa, partialTime,
-                            localPort, false, user, userOut, userIn, local);
+                            localPort, false, user, sshPort, userOut, userIn, local);
                 } else {
                     result = attemptConnection(target, sa, partialTime,
                             sendBuffer, receiveBuffer, localPort, false,
