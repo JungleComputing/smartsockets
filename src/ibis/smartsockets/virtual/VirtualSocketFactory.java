@@ -1504,6 +1504,9 @@ public final class VirtualSocketFactory {
                     logger.debug("Failed to open serversocket on port " + port
                             + " (will retry): ", e);
                 }
+                if (! retry) {
+                    return null;
+                }
             }
         }
 
