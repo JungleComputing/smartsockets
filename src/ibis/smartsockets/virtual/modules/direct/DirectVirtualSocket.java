@@ -214,6 +214,10 @@ public class DirectVirtualSocket extends VirtualSocket {
     public boolean getTcpNoDelay() throws SocketException {
         return s.getTcpNoDelay();
     }
+    
+    public boolean getKeepAlive() throws SocketException {
+	return s.getKeepAlive();
+    }
 
     /*
     public int getTrafficClass() throws SocketException {
@@ -276,6 +280,10 @@ public class DirectVirtualSocket extends VirtualSocket {
 
     public void setTcpNoDelay(boolean on) throws SocketException {
         s.setTcpNoDelay(on);
+    }
+    
+    public void setKeepAlive(boolean on) throws SocketException {
+        s.setKeepAlive(on);
     }
 
     /*

@@ -74,6 +74,9 @@ public abstract class DirectSocket {
 
     public abstract void setTcpNoDelay(boolean on) throws SocketException;
     public abstract boolean getTcpNoDelay() throws SocketException;
+    
+    public abstract void setKeepAlive(boolean on) throws SocketException;
+    public abstract boolean getKeepAlive() throws SocketException;
 
     public abstract SocketChannel getChannel();
 

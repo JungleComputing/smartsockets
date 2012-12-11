@@ -133,4 +133,16 @@ public class DirectSSHSocket extends DirectSocket {
         // TODO Auto-generated method stub
         return 0;
     }
+
+    @Override
+    public void setKeepAlive(boolean on) throws SocketException {
+	// TODO Auto-generated method stub
+	
+    }
+
+    @Override
+    public boolean getKeepAlive() throws SocketException {
+	// TODO Auto-generated method stub
+	return false;
+    }
 }
