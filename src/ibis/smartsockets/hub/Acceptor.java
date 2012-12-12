@@ -1,5 +1,6 @@
 package ibis.smartsockets.hub;
 
+// import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.direct.DirectServerSocket;
 import ibis.smartsockets.direct.DirectSimpleSocket;
@@ -45,6 +46,7 @@ public class Acceptor extends CommunicationThread {
 
     private int sendBuffer = -1;
     private int receiveBuffer = -1;
+    private boolean keepAlive = false;
 
     private LinkedList<DirectSocket> incoming = new LinkedList<DirectSocket>();
 
@@ -62,6 +64,7 @@ public class Acceptor extends CommunicationThread {
         this.callback = callback;
         this.statisticsInterval = statisticsInterval;
 
+        keepAlive = p.booleanProperty(SmartSocketsProperties.SL_KEEPALIVE);
         if (delegationAddress == null) {
             sendBuffer = p.getIntProperty(SmartSocketsProperties.HUB_SEND_BUFFER, -1);
             receiveBuffer = p.getIntProperty(SmartSocketsProperties.HUB_RECEIVE_BUFFER, -1);
@@ -161,6 +164,8 @@ public class Acceptor extends CommunicationThread {
             out.writeUTF(getLocalAsString());
             out.flush();
 
+            s.setKeepAlive(keepAlive);
+            
             ClientConnection c = new ClientConnection(srcAddr, s, in, out,
                     connections, knownHubs, virtualConnections, callback,
                     statisticsInterval);

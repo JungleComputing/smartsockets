@@ -280,6 +280,12 @@ public final class SmartSocketsProperties {
     public static final String SL_RECEIVE_BUFFER = SL_PREFIX + "receivebuffer";
 
     /**
+     * Set the KeepAlive flag on service links (false).
+     * @see ibis.smartsockets.hub.servicelink.ServiceLink
+     */
+    public static final String SL_KEEPALIVE = SL_PREFIX + "keepalive";
+    
+    /**
      * Is a servicelink required ? (false)
      * @see ibis.smartsockets.hub.servicelink.ServiceLink
      */

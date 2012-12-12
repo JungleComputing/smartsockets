@@ -76,7 +76,7 @@ public class VirtualServerSocket {
             return 0;
         }
   
-        // Try so remove all closed sockets from the queue ...
+        // Try to remove all closed sockets from the queue ...
         ListIterator<VirtualSocket> itt = incoming.listIterator();
 
         while (itt.hasNext()) {

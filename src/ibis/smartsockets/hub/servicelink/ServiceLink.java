@@ -106,10 +106,12 @@ public class ServiceLink implements Runnable {
     private final long maxReconnect;
 
     private final boolean forceConnection;
+    
+    private final boolean keepAlive;
 
     private ServiceLink(List<DirectSocketAddress> hubs,
             DirectSocketAddress myAddress, int sendBuffer, int receiveBuffer,
-            int virtualHubPort, long maxReconnect, boolean forceConnection) throws IOException {
+            int virtualHubPort, long maxReconnect, boolean forceConnection, boolean keepAlive) throws IOException {
 
         this.hubs = hubs;
         this.sendBuffer = sendBuffer;
@@ -118,6 +120,7 @@ public class ServiceLink implements Runnable {
 
         this.maxReconnect = maxReconnect;
         this.forceConnection = forceConnection;
+        this.keepAlive = keepAlive;
 
         this.virtualHubPort = virtualHubPort;
 
@@ -358,6 +361,7 @@ public class ServiceLink implements Runnable {
             }
 
             hub.setSoTimeout(0);
+            hub.setKeepAlive(keepAlive);
 
             setConnected(true);
         } catch (IOException e) {
@@ -1742,6 +1746,7 @@ public class ServiceLink implements Runnable {
         int virtualHubPort = 42;
 
         boolean force = true;
+        boolean keepAlive = false;
         long maxReconnect = 0;
 
         if (p != null) {
@@ -1749,6 +1754,7 @@ public class ServiceLink implements Runnable {
             receiveBuffer = p.getIntProperty(SmartSocketsProperties.SL_RECEIVE_BUFFER, -1);
             virtualHubPort = p.getIntProperty(SmartSocketsProperties.HUB_VIRTUAL_PORT, 42);
             force = p.booleanProperty(SmartSocketsProperties.SL_FORCE);
+            keepAlive = p.booleanProperty(SmartSocketsProperties.SL_KEEPALIVE);
 
             if (force) {
                 maxReconnect = ((long) p.getIntProperty(SmartSocketsProperties.SL_RETRIES)) *
@@ -1758,7 +1764,7 @@ public class ServiceLink implements Runnable {
 
         try {
             return new ServiceLink(hubs, myAddress, sendBuffer,
-                    receiveBuffer, virtualHubPort, maxReconnect, force);
+                    receiveBuffer, virtualHubPort, maxReconnect, force, keepAlive);
 
         } catch (Exception e) {
             logger.warn("ServiceLink: Failed to connect to hub!", e);
