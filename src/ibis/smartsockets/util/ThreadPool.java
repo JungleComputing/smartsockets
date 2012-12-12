@@ -47,7 +47,7 @@ public final class ThreadPool {
             if(nrOfThreads > maxSimultaneousThreads) {
                 maxSimultaneousThreads = nrOfThreads;
             }
-            logger.debug("New Thread \"" + name + "\" createded, number of threads now: "  + nrOfThreads);
+            logger.debug("New Thread \"" + name + "\" created, number of threads now: "  + nrOfThreads);
         }
 
         private static synchronized void threadGone() {

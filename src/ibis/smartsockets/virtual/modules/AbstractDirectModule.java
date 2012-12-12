@@ -86,7 +86,7 @@ public abstract class AbstractDirectModule extends MessagingModule implements Ac
             in = ds.getInputStream();
 
             if (logger.isDebugEnabled()) {
-                logger.debug(module + ": Connection seems OK, checking is " +
+                logger.debug(module + ": Connection seems OK, checking if " +
                         "server is willing to accept");
             }
 
@@ -97,6 +97,11 @@ public abstract class AbstractDirectModule extends MessagingModule implements Ac
 
             // Next check if the serverSocket is willing to accept
             int accept = vss.incomingConnection(vs);
+
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(module + ": accept = " + accept);
+            }
 
             if (accept != 0) {
 

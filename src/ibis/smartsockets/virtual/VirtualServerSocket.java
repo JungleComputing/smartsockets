@@ -60,7 +60,13 @@ public class VirtualServerSocket {
 
     public synchronized int incomingConnection(VirtualSocket s) {
 
+	if (VirtualSocketFactory.conlogger.isDebugEnabled()) {
+	    VirtualSocketFactory.conlogger.debug("Got connection " + s);
+	}
         if (closed) {
+            if (VirtualSocketFactory.conlogger.isDebugEnabled()) {
+        	VirtualSocketFactory.conlogger.debug("But the server socket was closed");
+            }
             return -1;
         }
 
@@ -69,7 +75,7 @@ public class VirtualServerSocket {
             notifyAll();
             return 0;
         }
-
+  
         // Try so remove all closed sockets from the queue ...
         ListIterator<VirtualSocket> itt = incoming.listIterator();
 
@@ -127,12 +133,20 @@ public class VirtualServerSocket {
 
         while (result == null) {
             result = getConnection();
-
+            if (VirtualSocketFactory.logger.isDebugEnabled()) {
+        	VirtualSocketFactory.logger.debug("VirtualServerPort got connection");
+            }
             if (result == null) {
+        	if (VirtualSocketFactory.logger.isDebugEnabled()) {
+        	    VirtualSocketFactory.logger.debug("closed during accept");
+                }
                 // Can only happen if socket has been closed
                 throw new IOException("Socket closed during accept");
             } else if (result.isClosed()) {
-                // Check is the other side is already closed...
+        	if (VirtualSocketFactory.logger.isDebugEnabled()) {
+        	    VirtualSocketFactory.logger.debug("other side already closed");
+                }
+                // Check if the other side is already closed...
                 result = null;
             } else {
                 // See if the other side is still willing to connect ...
