@@ -156,6 +156,9 @@ public class VirtualServerSocket {
                     if (timeout <= 0) {
                         t = defaultTimeout;
                     }
+                    if (VirtualSocketFactory.logger.isDebugEnabled()) {
+                        VirtualSocketFactory.logger.debug("timeout = " + timeout);
+                    }
 
                     result.connectionAccepted(t);
                 } catch (IOException e) {
@@ -207,6 +210,9 @@ public class VirtualServerSocket {
     }
 
     public void setSoTimeout(int t) throws SocketException {
+	if (VirtualSocketFactory.conlogger.isDebugEnabled()) {
+	    VirtualSocketFactory.conlogger.debug("setSoTimeout " + t, new Throwable());
+	}
         timeout = t;
     }
 
