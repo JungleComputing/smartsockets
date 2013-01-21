@@ -458,6 +458,12 @@ public final class SmartSocketsProperties {
             REVERSE_PREFIX + "selfconnect";
 
     /**
+     * Timeout for accept on connector in the reversed connection setup (in ms).
+     * @see ibis.smartsockets.virtual.modules.reverse.Reverse
+     */
+    public static final String REVERSE_ACCEPT_TIMEOUT = REVERSE_PREFIX + "accepttimeout";
+    
+    /**
      * Prefix for all SmartSockets "modules.hubrouted" properties.
      * @see ibis.smartsockets.virtual.modules.hubrouted
      */

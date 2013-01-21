@@ -32,6 +32,7 @@ public class Reverse extends MessagingModule {
     private boolean denyConnectionsToSelf = true;
 
     private HashMap<Integer, String> replies = new HashMap<Integer, String>();
+    private int acceptTimeout;
 
     private class Connector extends Thread {
 
@@ -65,6 +66,7 @@ public class Reverse extends MessagingModule {
         // for the user in this way.
         denyConnectionsToSelf = !properties.booleanProperty(
                 SmartSocketsProperties.REVERSE_CONNECT_SELF, false);
+        acceptTimeout = properties.getIntProperty(SmartSocketsProperties.REVERSE_ACCEPT_TIMEOUT, 100);
     }
 
     public void startModule() throws Exception {
@@ -197,7 +199,7 @@ public class Reverse extends MessagingModule {
 
             // Now wait for an incoming connection, while also checking for
             // a reply message to come in...
-            int waittime = 100;
+            int waittime = acceptTimeout;
             boolean stop = false;
 
             long deadline = System.currentTimeMillis() + timeout;
