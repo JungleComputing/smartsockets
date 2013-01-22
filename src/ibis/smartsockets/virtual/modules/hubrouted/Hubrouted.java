@@ -34,6 +34,8 @@ public class Hubrouted extends ConnectModule
     private int localBufferSize = 1024*1024;
     private int localMinimalACKSize = localBufferSize / 4;
 
+    private int defaultConnectTimeout;
+
     public Hubrouted() {
         super("ConnectModule(HubRouted)", true);
     }
@@ -44,6 +46,8 @@ public class Hubrouted extends ConnectModule
 
         localBufferSize = properties.getIntProperty(SmartSocketsProperties.ROUTED_BUFFER,
                 localBufferSize);
+        
+        defaultConnectTimeout = properties.getIntProperty(SmartSocketsProperties.ROUTED_CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
 
         localMinimalACKSize = properties.getIntProperty(
                 SmartSocketsProperties.ROUTED_MIN_ACK, localBufferSize/4);
@@ -112,7 +116,7 @@ public class Hubrouted extends ConnectModule
         */
 
         if (timeout == 0) {
-            timeout = DEFAULT_CONNECT_TIMEOUT;
+            timeout = defaultConnectTimeout;
         }
 
         final long deadline = System.currentTimeMillis() + timeout;
@@ -403,7 +407,7 @@ public class Hubrouted extends ConnectModule
     }
 
     public int getDefaultTimeout() {
-        return DEFAULT_CONNECT_TIMEOUT;
+        return defaultConnectTimeout;
     }
 
 

@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class Direct extends AbstractDirectModule {
 
-    private static int DEFAULT_CONNECT_TIMEOUT = 3000;
+    private static final int DEFAULT_CONNECT_TIMEOUT = 3000;
 
     private final DirectSocketFactory direct;
     private AcceptThread acceptThread;
@@ -29,6 +29,8 @@ public class Direct extends AbstractDirectModule {
     private int defaultReceiveBuffer;
 
     private boolean count = false;
+
+    private int defaultConnectTimeout;
 
     private class AcceptThread extends Thread {
 
@@ -75,6 +77,8 @@ public class Direct extends AbstractDirectModule {
 
         defaultSendBuffer = p.getIntProperty(
                 SmartSocketsProperties.DIRECT_SEND_BUFFER, -1);
+        
+        defaultConnectTimeout = p.getIntProperty(SmartSocketsProperties.DIRECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
 
         // Create a server socket to accept incoming connections.
         HashMap <String, String> prop = new HashMap<String, String>(3);
@@ -294,6 +298,6 @@ public class Direct extends AbstractDirectModule {
 
     @Override
     public int getDefaultTimeout() {
-        return DEFAULT_CONNECT_TIMEOUT;
+        return defaultConnectTimeout;
     }
 }

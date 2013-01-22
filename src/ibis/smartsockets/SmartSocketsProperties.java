@@ -464,11 +464,23 @@ public final class SmartSocketsProperties {
     public static final String REVERSE_ACCEPT_TIMEOUT = REVERSE_PREFIX + "accepttimeout";
     
     /**
+     * Default timeout for connect in the reversed connection setup (in ms).
+     * @see ibis.smartsockets.virtual.modules.reverse.Reverse
+     */
+    public static final String REVERSE_CONNECT_TIMEOUT = REVERSE_PREFIX + "connecttimeout";
+    
+    /**
      * Prefix for all SmartSockets "modules.hubrouted" properties.
      * @see ibis.smartsockets.virtual.modules.hubrouted
      */
     public static final String ROUTED_PREFIX = MODULES_PREFIX + "hubrouted.";
-
+    
+    /**
+     * Default timeout for connect in the routed connection setup (in ms).
+     * @see ibis.smartsockets.virtual.modules.hubrouted.Hubrouted
+     */
+    public static final String ROUTED_CONNECT_TIMEOUT = ROUTED_PREFIX + "connecttimeout";
+    
     /**
      * Total buffer size for each virtual (hubrouted) connection
      * (in bytes). (65536)
@@ -490,6 +502,19 @@ public final class SmartSocketsProperties {
      */
     public static final String ROUTED_MIN_ACK = ROUTED_PREFIX + "size.ack";
 
+    
+    /**
+     * Prefix for all SmartSockets "modules.splice" properties.
+     * @see ibis.smartsockets.virtual.modules.splice
+     */
+    public static final String SPLICE_PREFIX = MODULES_PREFIX + "splice.";
+    
+    /**
+     * Default timeout for connect in the spliced connection setup (in ms).
+     * @see ibis.smartsockets.virtual.modules.splice.Splice
+     */
+    public static final String SPLICE_CONNECT_TIMEOUT = SPLICE_PREFIX + "connecttimeout";
+    
     /**
      * Prefix for all SmartSockets "networks" properties.
      * @see ibis.smartsockets.direct.NetworkPreference

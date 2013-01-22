@@ -33,6 +33,7 @@ public class Reverse extends MessagingModule {
 
     private HashMap<Integer, String> replies = new HashMap<Integer, String>();
     private int acceptTimeout;
+    private int defaultConnectTimeout;
 
     private class Connector extends Thread {
 
@@ -67,6 +68,7 @@ public class Reverse extends MessagingModule {
         denyConnectionsToSelf = !properties.booleanProperty(
                 SmartSocketsProperties.REVERSE_CONNECT_SELF, false);
         acceptTimeout = properties.getIntProperty(SmartSocketsProperties.REVERSE_ACCEPT_TIMEOUT, 100);
+        defaultConnectTimeout = properties.getIntProperty(SmartSocketsProperties.REVERSE_CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
     }
 
     public void startModule() throws Exception {
@@ -161,7 +163,7 @@ public class Reverse extends MessagingModule {
 
 
         if (timeout <= 0) {
-            timeout = DEFAULT_CONNECT_TIMEOUT;
+            timeout = defaultConnectTimeout;
         }
 
         VirtualServerSocket ss = null;
@@ -406,7 +408,7 @@ public class Reverse extends MessagingModule {
         }
 
         if (timeout <= 0) {
-            timeout = DEFAULT_CONNECT_TIMEOUT;
+            timeout = defaultConnectTimeout;
         }
 
         if (USE_THREAD) {
@@ -454,6 +456,6 @@ public class Reverse extends MessagingModule {
     }
 
     public int getDefaultTimeout() {
-        return DEFAULT_CONNECT_TIMEOUT;
+        return defaultConnectTimeout;
     }
 }

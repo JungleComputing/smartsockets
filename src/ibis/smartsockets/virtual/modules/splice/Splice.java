@@ -1,5 +1,6 @@
 package ibis.smartsockets.virtual.modules.splice;
 
+import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.direct.DirectSocketFactory;
@@ -66,6 +67,7 @@ public class Splice extends AbstractDirectModule {
 
     private final HashMap<Integer, byte [][]> replies =
         new HashMap<Integer, byte [][]>();
+    private int defaultConnectTimeout;
 
     public Splice() {
         super("ConnectModule(Splice)", true);
@@ -539,6 +541,7 @@ public class Splice extends AbstractDirectModule {
     public void initModule(TypedProperties properties) throws Exception {
         // Create a direct socket factory.
         factory = DirectSocketFactory.getSocketFactory();
+        defaultConnectTimeout = properties.getIntProperty(SmartSocketsProperties.SPLICE_CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
     }
 
     public boolean matchAdditionalRuntimeRequirements(Map<String, ?> requirements) {
@@ -745,7 +748,7 @@ public class Splice extends AbstractDirectModule {
     }
 
     public int getDefaultTimeout() {
-        return DEFAULT_CONNECT_TIMEOUT;
+        return defaultConnectTimeout;
     }
 
 }
