@@ -500,7 +500,7 @@ public class Splice extends AbstractDirectModule {
 
         if (target.length == 1) {
             logger.debug(module + ": Single splice attempt!");
-            return factory.createSocket(target[0], 5000, localPort, -1, -1,
+            return factory.createSocket(target[0], timeout, localPort, -1, -1,
                     null, true, userdata);
         } else {
 

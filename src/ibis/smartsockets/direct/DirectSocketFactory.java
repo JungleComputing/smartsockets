@@ -870,7 +870,8 @@ public class DirectSocketFactory {
                         + " ms.");
             }
 
-            s.setSoTimeout(5000);
+            // Used to be 5000, but fails when timeout > 5000. --Ceriel/Roelof
+            s.setSoTimeout(timeout < 5000 ? 5000 : timeout);
 
             // Check if we are talking to the right machine...
             in = s.getInputStream();
