@@ -109,7 +109,7 @@ public class ServiceLink implements Runnable {
     
     private final boolean keepAlive;
 
-    private ServiceLink(List<DirectSocketAddress> hubs,
+    private ServiceLink(TypedProperties properties, List<DirectSocketAddress> hubs,
             DirectSocketAddress myAddress, int sendBuffer, int receiveBuffer,
             int virtualHubPort, long maxReconnect, boolean forceConnection, boolean keepAlive) throws IOException {
 
@@ -124,7 +124,7 @@ public class ServiceLink implements Runnable {
 
         this.virtualHubPort = virtualHubPort;
 
-        factory = DirectSocketFactory.getSocketFactory();
+        factory = DirectSocketFactory.getSocketFactory(properties);
 
         ThreadPool.createNew(this, "ServiceLink Message Reader");
     }
@@ -1763,7 +1763,7 @@ public class ServiceLink implements Runnable {
         }
 
         try {
-            return new ServiceLink(hubs, myAddress, sendBuffer,
+            return new ServiceLink(p, hubs, myAddress, sendBuffer,
                     receiveBuffer, virtualHubPort, maxReconnect, force, keepAlive);
 
         } catch (Exception e) {

@@ -64,21 +64,18 @@ public class Direct extends AbstractDirectModule {
       //              SmartSocketsProperties.PORT, 0);
       //  }
 
-        // TODO: why the default ??
-        TypedProperties p = SmartSocketsProperties.getDefaultProperties();
-
-        count = p.booleanProperty(SmartSocketsProperties.DIRECT_COUNT, false);
+        count = properties.booleanProperty(SmartSocketsProperties.DIRECT_COUNT, false);
 
         int backlog =
-            p.getIntProperty(SmartSocketsProperties.DIRECT_BACKLOG, 100);
+            properties.getIntProperty(SmartSocketsProperties.DIRECT_BACKLOG, 100);
 
-        defaultReceiveBuffer = p.getIntProperty(
+        defaultReceiveBuffer = properties.getIntProperty(
                 SmartSocketsProperties.DIRECT_RECEIVE_BUFFER, -1);
 
-        defaultSendBuffer = p.getIntProperty(
+        defaultSendBuffer = properties.getIntProperty(
                 SmartSocketsProperties.DIRECT_SEND_BUFFER, -1);
         
-        defaultConnectTimeout = p.getIntProperty(SmartSocketsProperties.DIRECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
+        defaultConnectTimeout = properties.getIntProperty(SmartSocketsProperties.DIRECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
 
         // Create a server socket to accept incoming connections.
         HashMap <String, String> prop = new HashMap<String, String>(3);
