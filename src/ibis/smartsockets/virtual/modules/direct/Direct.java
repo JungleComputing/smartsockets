@@ -53,7 +53,7 @@ public class Direct extends AbstractDirectModule {
         this.direct = direct;
     }
 
-    public void initModule(TypedProperties properties) throws Exception {
+    public void initModule(TypedProperties p) throws Exception {
 
         // Retrieve the value of the port property (if set). Default value
         // is '0' (any available port).
@@ -64,18 +64,18 @@ public class Direct extends AbstractDirectModule {
       //              SmartSocketsProperties.PORT, 0);
       //  }
 
-        count = properties.booleanProperty(SmartSocketsProperties.DIRECT_COUNT, false);
+        count = p.booleanProperty(SmartSocketsProperties.DIRECT_COUNT, false);
 
         int backlog =
-            properties.getIntProperty(SmartSocketsProperties.DIRECT_BACKLOG, 100);
+            p.getIntProperty(SmartSocketsProperties.DIRECT_BACKLOG, 100);
 
-        defaultReceiveBuffer = properties.getIntProperty(
+        defaultReceiveBuffer = p.getIntProperty(
                 SmartSocketsProperties.DIRECT_RECEIVE_BUFFER, -1);
 
-        defaultSendBuffer = properties.getIntProperty(
+        defaultSendBuffer = p.getIntProperty(
                 SmartSocketsProperties.DIRECT_SEND_BUFFER, -1);
         
-        defaultConnectTimeout = properties.getIntProperty(SmartSocketsProperties.DIRECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
+        defaultConnectTimeout = p.getIntProperty(SmartSocketsProperties.DIRECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
 
         // Create a server socket to accept incoming connections.
         HashMap <String, String> prop = new HashMap<String, String>(3);

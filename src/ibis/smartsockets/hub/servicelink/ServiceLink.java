@@ -31,10 +31,6 @@ public class ServiceLink implements Runnable {
     private static final Logger statslogger = LoggerFactory
             .getLogger("ibis.smartsockets.statistics");
 
-    private static final int TIMEOUT = 5000;
-
-    private static final int DEFAULT_WAIT_TIME = 10000;
-
     private final HashMap<String, Object> callbacks
         = new HashMap<String, Object>();
 
@@ -61,7 +57,7 @@ public class ServiceLink implements Runnable {
 
     private int nextCallbackID = 0;
 
-    private int maxWaitTime = DEFAULT_WAIT_TIME;
+    private int maxWaitTime;
 
     private final VirtualConnectionIndex vcIndex = new VirtualConnectionIndex(
             true);
@@ -108,6 +104,8 @@ public class ServiceLink implements Runnable {
     private final boolean forceConnection;
     
     private final boolean keepAlive;
+    
+    private final int timeout;
 
     private ServiceLink(TypedProperties properties, List<DirectSocketAddress> hubs,
             DirectSocketAddress myAddress, int sendBuffer, int receiveBuffer,
@@ -125,7 +123,9 @@ public class ServiceLink implements Runnable {
         this.virtualHubPort = virtualHubPort;
 
         factory = DirectSocketFactory.getSocketFactory(properties);
-
+        
+        timeout = factory.getDefaultTimeout();
+        maxWaitTime = 2 * timeout;
         ThreadPool.createNew(this, "ServiceLink Message Reader");
     }
 
@@ -319,7 +319,7 @@ public class ServiceLink implements Runnable {
             }
 
             // Create a connection to the hub
-            hub = factory.createSocket(address, TIMEOUT, 0, sendBuffer,
+            hub = factory.createSocket(address, timeout, 0, sendBuffer,
                     receiveBuffer, null, false, virtualHubPort);
 
             hub.setTcpNoDelay(true);

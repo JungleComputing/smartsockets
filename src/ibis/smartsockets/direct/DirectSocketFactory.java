@@ -262,6 +262,10 @@ public class DirectSocketFactory {
         getNATAddress();
     }
 
+    public int getDefaultTimeout() {
+        return DEFAULT_TIMEOUT;
+    }
+
     private char[][] getPrivateSSHKeys() {
 
         ArrayList<char[]> result = new ArrayList<char[]>();
