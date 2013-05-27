@@ -112,7 +112,7 @@ public class DirectServerSocket {
      * @param address the external address to add.
      */
     protected void addExternalAddress(DirectSocketAddress address) {
-        // TODO: some checks on the address to see if it makes sence ?
+        // TODO: some checks on the address to see if it makes sense ?
 
         // Create array if it doesn't exist yet.
         if (external == null) {

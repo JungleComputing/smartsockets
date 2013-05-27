@@ -9,6 +9,7 @@ import ibis.smartsockets.util.UPNP;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,16 +23,38 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //import ch.ethz.ssh2.Connection;
 //import ch.ethz.ssh2.LocalStreamForwarder;
+
+
+
+
+
+
+
+
+
+
+
 
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.LocalStreamForwarder;
@@ -77,6 +100,10 @@ public class DirectSocketFactory {
     private final boolean ALLOW_SSH_OUT;
 
     private final boolean FORCE_SSH_OUT;
+    
+    private final boolean SECURE_CONNECTIONS;
+    
+    private final boolean AUTHENTICATED_CONNECTIONS;
 
     private final int defaultReceiveBuffer;
 
@@ -115,6 +142,12 @@ public class DirectSocketFactory {
 
     private String keyFilePass = "";
 
+    private SSLSocketFactory factory;
+
+    private SSLServerSocketFactory serverFactory;
+    
+    private String[] cipherSuites;
+
     private DirectSocketFactory(TypedProperties p) {
 
         // properties = p;
@@ -125,6 +158,10 @@ public class DirectSocketFactory {
                 SmartSocketsProperties.DIRECT_TIMEOUT, 5000);
         DEFAULT_LOCAL_TIMEOUT = p.getIntProperty(
                 SmartSocketsProperties.DIRECT_LOCAL_TIMEOUT, 1000);
+        SECURE_CONNECTIONS = p.booleanProperty(SmartSocketsProperties.CONNECTIONS_SECURE, false);
+        AUTHENTICATED_CONNECTIONS = SECURE_CONNECTIONS
+                && p.booleanProperty(SmartSocketsProperties.CONNECTIONS_AUTHENTICATED, false);
+        
 
         boolean allowSSHIn = p.booleanProperty(SmartSocketsProperties.SSH_IN,
                 false);
@@ -260,6 +297,19 @@ public class DirectSocketFactory {
         haveFirewallRules = preference.haveFirewallRules();
 
         getNATAddress();
+        
+        if (SECURE_CONNECTIONS) {
+            try {
+                String trustStore = p.getProperty(SmartSocketsProperties.TRUSTSTORE);
+                String trustStorePasswd = p.getProperty(SmartSocketsProperties.TRUSTSTORE_PASSWD);
+                String keyStore = p.getProperty(SmartSocketsProperties.KEYSTORE);
+                String keyStorePasswd = p.getProperty(SmartSocketsProperties.KEYSTORE_PASSWD);
+                initializeSSL(trustStore, trustStorePasswd, keyStore, keyStorePasswd);
+            } catch(Throwable e) {
+                // logger.error("Could not initialize secure connections", e);
+                throw new Error("Could not initialize secure connections", e);
+            }
+        }
     }
 
     public int getDefaultTimeout() {
@@ -570,6 +620,66 @@ public class DirectSocketFactory {
 
         return result;
     }
+    
+    private void initializeSSL(String trustStorePath, String trustStorePasswd,
+            String keyStorePath, String keyStorePasswd) throws Exception {
+        
+        // Load certificates from the specified cert store (or default).
+        TrustManager[] tms = null;
+        if (trustStorePath != null) {
+            KeyStore ts = KeyStore.getInstance("jks");
+            InputStream in = new FileInputStream(trustStorePath);
+            try {
+                ts.load(in, trustStorePasswd.toCharArray());
+            } finally {
+                in.close();
+            }
+            
+            // initialize a new TMF with the ts we just loaded
+            TrustManagerFactory tmf = TrustManagerFactory
+                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(ts);
+            tms = tmf.getTrustManagers();
+            // Or just get the X509 one?
+        }
+        
+        // Also load keys from the specified key store.
+        KeyManager[] kms = null;
+        if (keyStorePath != null) {
+            KeyStore ks = KeyStore.getInstance("jks");
+            InputStream in = new FileInputStream(keyStorePath);
+            try {
+                ks.load(in, keyStorePasswd.toCharArray());
+            } finally {
+                in.close();
+            }
+            KeyManagerFactory kmf = KeyManagerFactory
+                    .getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, "".toCharArray());
+            kms = kmf.getKeyManagers();
+        }
+
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(kms, tms, null);
+        factory = context.getSocketFactory();
+        serverFactory = context.getServerSocketFactory();
+        ArrayList<String> ciphersToBeUsed = new ArrayList<String>();
+        SSLSocket s = (SSLSocket) factory.createSocket();
+        String[] cphs = s.getSupportedCipherSuites();
+        if (AUTHENTICATED_CONNECTIONS) {
+            cphs = s.getEnabledCipherSuites();
+        }
+        for (String cph : cphs) {
+            if (! cph.contains("NULL")) {
+                // Remove ciphers that don't do encryption
+                ciphersToBeUsed.add(cph);
+            }
+        }
+        cipherSuites = ciphersToBeUsed.toArray(new String[ciphersToBeUsed.size()]);
+        if (logger.isDebugEnabled()) {
+            logger.debug("cipherSuites: " + Arrays.toString(cipherSuites));
+        }
+    }
 
     private Socket createUnboundSocket() throws IOException {
 
@@ -578,6 +688,9 @@ public class DirectSocketFactory {
         if (USE_NIO) {
             SocketChannel channel = SocketChannel.open();
             s = channel.socket();
+        } else if (SECURE_CONNECTIONS) {
+            s = factory.createSocket();
+            ((SSLSocket) s).setEnabledCipherSuites(cipherSuites);
         } else {
             s = new Socket();
         }
@@ -590,6 +703,10 @@ public class DirectSocketFactory {
         if (USE_NIO) {
             ServerSocketChannel channel = ServerSocketChannel.open();
             return channel.socket();
+        } else if (SECURE_CONNECTIONS) {
+            ServerSocket s = serverFactory.createServerSocket();
+            ((SSLServerSocket) s).setEnabledCipherSuites(cipherSuites);
+            return s;
         } else {
             return new ServerSocket();
         }
@@ -727,7 +844,7 @@ public class DirectSocketFactory {
 
         try {
             isAuthenticated = conn.authenticateWithPublicKey(user);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Failed to create SSH connection to "
                         + NetworkUtils.ipToString(target.getAddress())
@@ -746,7 +863,7 @@ public class DirectSocketFactory {
                 try {
                     isAuthenticated = conn.authenticateWithPublicKey(user, key,
                             keyFilePass);
-                } catch (IOException e) {
+                } catch (Throwable e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Failed to create SSH connection to "
                                 + NetworkUtils.ipToString(target.getAddress())

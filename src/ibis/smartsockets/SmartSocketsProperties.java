@@ -691,6 +691,24 @@ public final class SmartSocketsProperties {
      * @see ibis.smartsockets.virtual.VirtualClusters
      */
     public static final String CLUSTER_SUB_REORDER = "preference.reorder";
+    
+    /**
+     * Set when connections must be secure (encrypted).
+     */
+    public static final String CONNECTIONS_SECURE = DIRECT_PREFIX + "connections.secure";
+    
+    /**
+     * Set when secure connections must be authenticated as well.
+     */
+    public static final String CONNECTIONS_AUTHENTICATED = DIRECT_PREFIX + "connections.authenticate";
+    
+    public static final String TRUSTSTORE = DIRECT_PREFIX + "truststore";
+    
+    public static final String TRUSTSTORE_PASSWD = DIRECT_PREFIX + "truststore.password";
+    
+    public static final String KEYSTORE = DIRECT_PREFIX + "keystore";
+    
+    public static final String KEYSTORE_PASSWD = DIRECT_PREFIX + "keystore.password";
 
     /**
      * Default values for various properties.
@@ -742,7 +760,10 @@ public final class SmartSocketsProperties {
             SL_RETRIES,             "6",
 
             ROUTED_BUFFER,          "65536",
-            ROUTED_FRAGMENT,        "8176"
+            ROUTED_FRAGMENT,        "8176",
+            
+            CONNECTIONS_AUTHENTICATED, "false",
+            CONNECTIONS_SECURE,     "false"
     };
 
     /**
@@ -816,11 +837,11 @@ public final class SmartSocketsProperties {
             return p;
         } catch (IOException e) {
             LOGGER.warn("Error while loading property file: " + file, e);
-
+        } finally {
             try {
                 in.close();
             } catch (Exception x) {
-                LOGGER.warn("Failed to close property file: " + file, e);
+                LOGGER.warn("Failed to close property file: " + file, x);
             }
         }
 
