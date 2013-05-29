@@ -42,21 +42,8 @@ import javax.net.ssl.TrustManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//import ch.ethz.ssh2.Connection;
-//import ch.ethz.ssh2.LocalStreamForwarder;
-
-
-
-
-
-
-
-
-
-
-
-
 import com.trilead.ssh2.Connection;
+import com.trilead.ssh2.DebugLogger;
 import com.trilead.ssh2.LocalStreamForwarder;
 
 /**
@@ -835,7 +822,15 @@ public class DirectSocketFactory {
         }
 
         Connection conn = new Connection(host, sshPort);
-        //conn.enableDebugging(true, null);
+        if (logger.isDebugEnabled()) {
+            DebugLogger log = new DebugLogger() {
+
+                public void log(int arg0, String arg1, String arg2) {
+                    logger.debug(arg1 + ": " + arg2);
+                }
+            };
+            conn.enableDebugging(true, log);
+        }
         conn.connect(null, timeout, timeout);
 
         boolean isAuthenticated = false;
