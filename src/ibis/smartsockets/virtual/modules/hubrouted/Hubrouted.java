@@ -237,7 +237,9 @@ public class Hubrouted extends ConnectModule
 
         // Could not find it, so send a 'port not found' error back
         if (ss == null) {
-            logger.info("Failed find VirtualServerSocket(" + port + ")");
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed find VirtualServerSocket(" + port + ")");
+            }
        //     rejectedIncomingConnections++;
 
             serviceLink.nackVirtualConnection(index,
@@ -358,8 +360,10 @@ public class Hubrouted extends ConnectModule
             try {
                 serviceLink.closeVirtualConnection(index);
             } catch (Exception e) {
-                logger.info("Failed to process ACKACK for socket!: "
-                        + index, e);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Failed to process ACKACK for socket!: "
+                            + index, e);
+                }
             }
         }
     }

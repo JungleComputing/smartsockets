@@ -293,7 +293,9 @@ public class HubNode extends SmartNode {
     public synchronized void updateInfo(HubInfo info) {
         this.info = info;
 
-        logger.debug("Updating info for hub: \"" + info.vizInfo + "\"");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Updating info for hub: \"" + info.vizInfo + "\"");
+        }
 
         if (info.vizInfo != null && info.vizInfo.length() > 0) {
             // double escape ^ char

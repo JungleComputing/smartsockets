@@ -59,16 +59,20 @@ public class STUN {
 
         public void run() {
             try {
-                logger.info("STUN discovery initiated on: " + iaddress
-                        + ":" + port);
+                if (logger.isInfoEnabled()) {
+                    logger.info("STUN discovery initiated on: " + iaddress
+                            + ":" + port);
+                }
 
                 DiscoveryTest test = new DiscoveryTest(iaddress, server, port);
 
                 synchronized (this) {
                     result = test.test();
 
-                    logger.info("STUN discovery done on: " + iaddress + ":" + port
-                            + "\n" + result);
+                    if (logger.isInfoEnabled()) {
+                        logger.info("STUN discovery done on: " + iaddress + ":" + port
+                                + "\n" + result);
+                    }
 
                     done = true;
                     notifyAll();
@@ -83,13 +87,17 @@ public class STUN {
 
     private static void getExternalAddress(String server, int timeout) {
 
-        logger.info("Trying to determine external address using "
-                + "STUN server:" + server);
+        if (logger.isInfoEnabled()) {
+            logger.info("Trying to determine external address using "
+                    + "STUN server:" + server);
+        }
 
         InetAddress [] addresses = NetworkUtils.getAllHostAddresses();
         Discovery [] tmp = new Discovery[addresses.length];
 
-        logger.info("Network addresses available: " + addresses.length);
+        if (logger.isInfoEnabled()) {
+            logger.info("Network addresses available: " + addresses.length);
+        }
 
         int wait = 25;
         int count = 0;
@@ -118,9 +126,13 @@ public class STUN {
                     count--;
 
                     if (info == null) {
-                        logger.info("STUN failed for " + addresses[i]);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("STUN failed for " + addresses[i]);
+                        }
                     } else {
-                        logger.info("STUN result for " + addresses[i] + ":\n" + info);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("STUN result for " + addresses[i] + ":\n" + info);
+                        }
 
                         if (info.isOpenAccess()) {
                             external = addresses[i];
@@ -128,8 +140,10 @@ public class STUN {
                             external = info.getPublicIP();
                         }
 
-                        logger.info("Found external address: " + external
-                                + " using server " + server);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Found external address: " + external
+                                    + " using server " + server);
+                        }
                         return;
                     }
                 }

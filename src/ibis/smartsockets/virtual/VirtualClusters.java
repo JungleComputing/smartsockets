@@ -25,8 +25,10 @@ public class VirtualClusters {
             this.name = name;
             this.order = order;
 
-            logger.info("Created cluster definition " + name + " "
-                    + Arrays.deepToString(order));
+            if (logger.isInfoEnabled()) {
+                logger.info("Created cluster definition " + name + " "
+                        + Arrays.deepToString(order));
+            }
         }
 
         public void reorder(ConnectModule m) {
@@ -76,7 +78,9 @@ public class VirtualClusters {
             // of the cluster definitions...
             localCluster = "";
             this.defaultOrder = new ClusterDefinition("default", order);
-            logger.info("I am not a member of any of the virtual clusters!");
+            if (logger.isInfoEnabled()) {
+                logger.info("I am not a member of any of the virtual clusters!");
+            }
             return;
         }
 
@@ -86,7 +90,9 @@ public class VirtualClusters {
                 SmartSocketsProperties.CLUSTER_DEFINE, ",",
                 new String [] { localCluster });
 
-        logger.info("Clusters defined: " + Arrays.deepToString(clusters));
+        if (logger.isInfoEnabled()) {
+            logger.info("Clusters defined: " + Arrays.deepToString(clusters));
+        }
 
         int myCluster = -1;
 
@@ -98,14 +104,18 @@ public class VirtualClusters {
         }
 
         if (myCluster == -1) {
-            logger.info("Missing the virtual cluster definition for my cluster:"
-                    + localCluster);
+            if (logger.isInfoEnabled()) {
+                logger.info("Missing the virtual cluster definition for my cluster:"
+                        + localCluster);
+            }
             this.defaultOrder = new ClusterDefinition("default", order);
             return;
         }
 
-        logger.info("Processing cluster definitions:");
-        logger.info("  - my cluster: " + localCluster);
+        if (logger.isInfoEnabled()) {
+            logger.info("Processing cluster definitions:");
+            logger.info("  - my cluster: " + localCluster);
+        }
 
         String prefix = SmartSocketsProperties.CLUSTER_PREFIX + localCluster + ".";
 
@@ -120,7 +130,9 @@ public class VirtualClusters {
             this.defaultOrder = new ClusterDefinition("default", order);
         }
 
-        logger.info("  - default : " + Arrays.deepToString(tmp));
+        if (logger.isInfoEnabled()) {
+            logger.info("  - default : " + Arrays.deepToString(tmp));
+        }
 
         // Next, get the rule for how we are supposed to connect inside our own
         // cluster...
@@ -146,7 +158,9 @@ public class VirtualClusters {
     }
 
     private void addCluster(String name, ConnectModule [] order) {
-        logger.info("  - to " + name + " : " + Arrays.deepToString(order));
+        if (logger.isInfoEnabled()) {
+            logger.info("  - to " + name + " : " + Arrays.deepToString(order));
+        }
         clusters.put(name, new ClusterDefinition(name, order));
     }
 

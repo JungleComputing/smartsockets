@@ -616,8 +616,12 @@ public class DirectSocketFactory {
         if (trustStorePath != null) {
             KeyStore ts = KeyStore.getInstance("jks");
             InputStream in = new FileInputStream(trustStorePath);
+            char[] passwd = null;
+            if (trustStorePasswd != null) {
+        	passwd = trustStorePasswd.toCharArray();
+            }
             try {
-                ts.load(in, trustStorePasswd.toCharArray());
+                ts.load(in, passwd);
             } finally {
                 in.close();
             }
@@ -635,8 +639,12 @@ public class DirectSocketFactory {
         if (keyStorePath != null) {
             KeyStore ks = KeyStore.getInstance("jks");
             InputStream in = new FileInputStream(keyStorePath);
+            char[] passwd = null;
+            if (keyStorePasswd != null) {
+        	passwd = keyStorePasswd.toCharArray();
+            }
             try {
-                ks.load(in, keyStorePasswd.toCharArray());
+                ks.load(in, passwd);
             } finally {
                 in.close();
             }

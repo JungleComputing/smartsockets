@@ -162,8 +162,10 @@ public class VirtualServerSocket {
 
                     result.connectionAccepted(t);
                 } catch (IOException e) {
-                    VirtualSocketFactory.logger.info("VirtualServerPort( "
-                            + port + ") got exception during accept!", e);
+                    if (VirtualSocketFactory.logger.isInfoEnabled()) {
+                        VirtualSocketFactory.logger.info("VirtualServerPort( "
+                                + port + ") got exception during accept!", e);
+                    }
                     result = null;
                 }
             }

@@ -97,8 +97,10 @@ public class Direct extends AbstractDirectModule {
             }
 
         } catch (IOException e) {
-            logger.info(module + ": Failed to initialize direct module "
-                    + port, e);
+            if (logger.isInfoEnabled()) {
+                logger.info(module + ": Failed to initialize direct module "
+                        + port, e);
+            }
 
             throw e;
             //throw new Exception("Failed to initialize direct module: "

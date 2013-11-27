@@ -90,7 +90,7 @@ class Connector extends CommunicationThread {
         // Creates a connection to a hub to check if it is reachable. If so,
         // it will send a ping.
         if (hconlogger.isDebugEnabled()) {
-            hconlogger.info("Creating test connection to " + d.hubAddress);
+            hconlogger.debug("Creating test connection to " + d.hubAddress);
         }
 
         try {
@@ -121,7 +121,7 @@ class Connector extends CommunicationThread {
         } catch (IOException e) {
 
             if (hconlogger.isDebugEnabled()) {
-                hconlogger.info("Failed to set up connection!");
+                hconlogger.debug("Failed to set up connection!");
             }
 
 //            if (!d.reachableKnown() || d.isReachable()) {

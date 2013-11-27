@@ -110,7 +110,9 @@ public class Splice extends AbstractDirectModule {
                 }
 
             } catch (Exception e) {
-                logger.info("Failed to retrieve hub list!", e);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Failed to retrieve hub list!", e);
+                }
             }
         }
 
@@ -388,8 +390,10 @@ public class Splice extends AbstractDirectModule {
                 local = getInfo(hub, (int) timeleft, local, result);
             } catch (IOException e) {
                 // Failed to contact hub!
-                logger.info("Failed to contact hub: " + hub.toString()
-                        + " for splice info (will try other hubs)", e);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Failed to contact hub: " + hub.toString()
+                            + " for splice info (will try other hubs)", e);
+                }
             }
 
             if (result[0] != null) {
@@ -398,8 +402,10 @@ public class Splice extends AbstractDirectModule {
 
                 externalAddress = result[0].getAddressSet();
 
-                logger.info("Splicing found external address: "
-                        + externalAddress + " port " + localPort[0]);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Splicing found external address: "
+                            + externalAddress + " port " + localPort[0]);
+                }
 
                 if (testing) {
                     // We found a suitable hub, so save it!
@@ -499,7 +505,9 @@ public class Splice extends AbstractDirectModule {
 
 
         if (target.length == 1) {
-            logger.debug(module + ": Single splice attempt!");
+            if (logger.isDebugEnabled()) {
+                logger.debug(module + ": Single splice attempt!");
+            }
             return factory.createSocket(target[0], timeout, localPort, -1, -1,
                     null, true, userdata);
         } else {
@@ -509,20 +517,26 @@ public class Splice extends AbstractDirectModule {
             for (int i=0;i<MAX_ATTEMPTS;i++) {
                 for (int t=0;t<target.length;t++) {
 
-                    logger.debug(module + ": Splice attempt (" + i + "/" + t + ")");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(module + ": Splice attempt (" + i + "/" + t + ")");
+                    }
 
                     try {
                         return factory.createSocket(target[t], timeout,
                                 localPort, -1, -1, null, false, userdata);
                     } catch (IOException e) {
-                        logger.info(module + ": Connection failed "
-                                + Arrays.deepToString(target), e);
+                        if (logger.isInfoEnabled()) {
+                            logger.info(module + ": Connection failed "
+                                    + Arrays.deepToString(target), e);
+                        }
                         cause = e;
                     }
                 }
             }
 
-            logger.debug(module + ": Splice failed.");
+            if (logger.isDebugEnabled()) {
+                logger.debug(module + ": Splice failed.");
+            }
 
             if (cause != null) {
                 throw cause;
@@ -742,7 +756,9 @@ public class Splice extends AbstractDirectModule {
                 handleAccept(s);
 
             } catch (Exception e) {
-                logger.info(module + ": Incoming connection setup failed!", e);
+                if (logger.isInfoEnabled()) {
+                    logger.info(module + ": Incoming connection setup failed!", e);
+                }
             }
         }
     }

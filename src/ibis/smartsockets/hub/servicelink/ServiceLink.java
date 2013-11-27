@@ -365,8 +365,10 @@ public class ServiceLink implements Runnable {
 
             setConnected(true);
         } catch (IOException e) {
-            logger.info("Connection setup to hub at " + address + " failed: ",
-                    e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Connection setup to hub at " + address + " failed: ",
+                        e);
+            }
             closeConnectionToHub();
             throw e;
         }
@@ -1464,7 +1466,7 @@ public class ServiceLink implements Runnable {
 
     public void closeVirtualConnection(long index) throws IOException {
 
-        if (logger.isInfoEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("Closing virtual connection: " + index);
         }
 
@@ -1485,7 +1487,7 @@ public class ServiceLink implements Runnable {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.warn("Virtual connection " + index + " closed!");
+            logger.debug("Virtual connection " + index + " closed!");
         }
     }
 
@@ -1685,7 +1687,9 @@ public class ServiceLink implements Runnable {
                             break;
                         } catch (IOException e) {
                             // Connection setup failed..
-                            logger.info("Failed to connect to hub: " + a);
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Failed to connect to hub: " + a);
+                            }
                         }
                     }
 

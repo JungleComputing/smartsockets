@@ -82,7 +82,9 @@ public final class Hub extends Thread implements StatisticsCallback {
                 SmartSocketsProperties.HUB_SSH_ALLOWED, true);
 
         if (allowSSHForHub) {
-            misclogger.info("Hub allowd to use SSH");
+            if (misclogger.isInfoEnabled()) {
+                misclogger.info("Hub allowd to use SSH");
+            }
             p.setProperty(SmartSocketsProperties.SSH_IN, "true");
             p.setProperty(SmartSocketsProperties.SSH_OUT, "true");
         }
@@ -112,7 +114,9 @@ public final class Hub extends Thread implements StatisticsCallback {
 
            // System.err.println("**** HUB USING DELEGATION TO: " + tmp);
 
-            misclogger.debug("**** HUB USING DELEGATION TO: " + tmp);
+            if (misclogger.isDebugEnabled()) {
+                misclogger.debug("**** HUB USING DELEGATION TO: " + tmp);
+            }
 
             try {
                 delegationAddress = DirectSocketAddress.getByAddress(tmp);
@@ -204,12 +208,16 @@ public final class Hub extends Thread implements StatisticsCallback {
             discovery = new Discovery(dp, 0, 0);
             discovery.answeringMachine("Any Proxies?", suffixes, local.toString());
 
-            misclogger.info("Hub will reply to discovery requests from: " +
-                    Arrays.deepToString(suffixes));
+            if (misclogger.isInfoEnabled()) {
+                misclogger.info("Hub will reply to discovery requests from: " +
+                        Arrays.deepToString(suffixes));
+            }
 
         } else {
             discovery = null;
-            misclogger.info("Hub will not reply to discovery requests!");
+            if (misclogger.isInfoEnabled()) {
+                misclogger.info("Hub will not reply to discovery requests!");
+            }
         }
 
         if (goslogger.isInfoEnabled()) {
@@ -254,7 +262,9 @@ public final class Hub extends Thread implements StatisticsCallback {
         if (hubAddresses != null) {
             for (DirectSocketAddress s : hubAddresses) {
                 if (s != null && !local.sameProcess(s)) {
-                    misclogger.info("Adding hub address: " + s);
+                    if (misclogger.isInfoEnabled()) {
+                        misclogger.info("Adding hub address: " + s);
+                    }
                     hubs.add(s);
                 }
             }
@@ -273,7 +283,9 @@ public final class Hub extends Thread implements StatisticsCallback {
                         DirectSocketAddress tmp = DirectSocketAddress.getByAddress(s);
 
                         if (!local.sameProcess(tmp)) {
-                            misclogger.info("Adding hub address: " + s);
+                            if (misclogger.isInfoEnabled()) {
+                                misclogger.info("Adding hub address: " + s);
+                            }
                             hubs.add(tmp);
                         }
                     } catch (Exception e) {

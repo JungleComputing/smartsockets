@@ -228,7 +228,9 @@ public class Acceptor extends CommunicationThread {
         DataOutputStream out = null;
         boolean result = false;
 
-        hublogger.debug("Waiting for connection...");
+        if (hublogger.isDebugEnabled()) {
+            hublogger.debug("Waiting for connection...");
+        }
 
         try {
             in = new DataInputStream(

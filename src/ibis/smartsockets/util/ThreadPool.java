@@ -26,7 +26,9 @@ public final class ThreadPool {
         private static final class ThreadPoolShutdown extends Thread {
             public void run() {
                 Logger logger = LoggerFactory.getLogger(ThreadPool.class);
-                logger.info("maximum number of simultaneous threads was: " + maxSimultaneousThreads);
+                if (logger.isInfoEnabled()) {
+                    logger.info("maximum number of simultaneous threads was: " + maxSimultaneousThreads);
+                }
             }
         }
 
@@ -47,12 +49,16 @@ public final class ThreadPool {
             if(nrOfThreads > maxSimultaneousThreads) {
                 maxSimultaneousThreads = nrOfThreads;
             }
-            logger.debug("New Thread \"" + name + "\" created, number of threads now: "  + nrOfThreads);
+            if (logger.isDebugEnabled()) {
+                logger.debug("New Thread \"" + name + "\" created, number of threads now: "  + nrOfThreads);
+            }
         }
 
         private static synchronized void threadGone() {
             nrOfThreads--;
-            logger.debug("Thread removed from pool. Now " + nrOfThreads + " threads");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Thread removed from pool. Now " + nrOfThreads + " threads");
+            }
         }
 
         private PoolThread() {
@@ -70,7 +76,9 @@ public final class ThreadPool {
 
         private synchronized boolean issue(Runnable newWork, String newName) {
             if (expired) {
-                logger.debug("issue(): thread has expired");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("issue(): thread has expired");
+                }
                 return false;
             }
 
@@ -81,7 +89,9 @@ public final class ThreadPool {
 
             work = newWork;
             name = newName;
-            logger.trace("issue(): reusing thread");
+            if (logger.isTraceEnabled()) {
+                logger.trace("issue(): reusing thread");
+            }
 
             notifyAll();
             return true;

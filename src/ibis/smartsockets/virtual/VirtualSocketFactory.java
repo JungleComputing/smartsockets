@@ -232,12 +232,16 @@ public final class VirtualSocketFactory {
         try {
             loadModules();
         } catch (Exception e) {
-            logger.info("Failed to load modules!", e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to load modules!", e);
+            }
             throw new InitializationException(e.getMessage(), e);
         }
 
         if (modules.size() == 0) {
-            logger.info("Failed to load any modules!");
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to load any modules!");
+            }
             throw new InitializationException("Failed to load any modules!");
         }
 
@@ -257,7 +261,9 @@ public final class VirtualSocketFactory {
         startModules();
 
         if (modules.size() == 0) {
-            logger.info("Failed to start any modules!");
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to start any modules!");
+            }
             throw new InitializationException("Failed to load any modules!");
         }
 
@@ -301,7 +307,9 @@ public final class VirtualSocketFactory {
                     SmartSocketsProperties.HUB_DELEGATE, false);
 
             if (delegate) {
-                logger.info("Factory delegating hub accepts to direct module!");
+                if (logger.isInfoEnabled()) {
+                    logger.info("Factory delegating hub accepts to direct module!");
+                }
 
                 // We should now add an AcceptHandler to the direct module that
                 // intercepts incoming connections for the hub. Start by finding
@@ -326,11 +334,15 @@ public final class VirtualSocketFactory {
             }
 
             // Now we create the hub
-            logger.info("Factory is starting hub");
+            if (logger.isInfoEnabled()) {
+                logger.info("Factory is starting hub");
+            }
 
             try {
                 hub = new Hub(p);
-                logger.info("Hub running on: " + hub.getHubAddress());
+                if (logger.isInfoEnabled()) {
+                    logger.info("Hub running on: " + hub.getHubAddress());
+                }
             } catch (IOException e) {
                 throw new InitializationException("Failed to start hub", e);
             }
@@ -514,8 +526,7 @@ public final class VirtualSocketFactory {
             } catch (Exception e) {
 
                 if (props.length == 1) {
-                    logger
-                            .warn("Failed to register user property: "
+                    logger.warn("Failed to register user property: "
                                     + props[0]);
                 } else {
                     logger.warn("Failed to register user property: " + props[0]
@@ -573,7 +584,9 @@ public final class VirtualSocketFactory {
             return (ConnectModule) c.newInstance();
 
         } catch (Exception e) {
-            logger.info("Failed to load module " + classname, e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to load module " + classname, e);
+            }
         }
 
         return null;
@@ -660,12 +673,16 @@ public final class VirtualSocketFactory {
             direct.init(this, "direct", properties, logger);
             myAddresses = direct.getAddresses();
         } catch (Exception e) {
-            logger.info("Failed to load direct module!", e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to load direct module!", e);
+            }
             throw e;
         }
 
         if (myAddresses == null) {
-            logger.info("Failed to retrieve my own address!");
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to retrieve my own address!");
+            }
             throw new NoLocalAddressException(
                     "Failed to retrieve local address!");
         }
@@ -792,9 +809,10 @@ public final class VirtualSocketFactory {
             }
 
             for (ConnectModule c : failed) {
-                logger
-                        .info("Module " + c.module
+                if (logger.isInfoEnabled()) {
+                    logger.info("Module " + c.module
                                 + " removed (no serviceLink)!");
+                }
                 modules.remove(c);
             }
 
@@ -872,7 +890,9 @@ public final class VirtualSocketFactory {
                 out.close();
             }
         } catch (Throwable e) {
-            logger.info("Failed to close OutputStream", e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to close OutputStream", e);
+            }
         }
 
         try {
@@ -880,7 +900,9 @@ public final class VirtualSocketFactory {
                 in.close();
             }
         } catch (Throwable e) {
-            logger.info("Failed to close InputStream", e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to close InputStream", e);
+            }
         }
 
         try {
@@ -888,7 +910,9 @@ public final class VirtualSocketFactory {
                 s.close();
             }
         } catch (Throwable e) {
-            logger.info("Failed to close Socket", e);
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to close Socket", e);
+            }
         }
     }
 
@@ -905,7 +929,9 @@ public final class VirtualSocketFactory {
             try {
                 channel.close();
             } catch (Exception e) {
-                logger.info("Failed to close SocketChannel", e);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Failed to close SocketChannel", e);
+                }
             }
         }
 
@@ -913,7 +939,9 @@ public final class VirtualSocketFactory {
             try {
                 s.close();
             } catch (Exception e) {
-                logger.info("Failed to close Socket", e);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Failed to close Socket", e);
+                }
             }
         }
     }
@@ -1674,7 +1702,9 @@ public final class VirtualSocketFactory {
             try {
                 return serviceLink.hubs();
             } catch (IOException e) {
-                logger.info("Failed to retrieve hub list!", e);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Failed to retrieve hub list!", e);
+                }
             }
         }
 

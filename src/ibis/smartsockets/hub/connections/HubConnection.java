@@ -308,6 +308,8 @@ public class HubConnection extends MessageForwardingConnection {
         disconnect();
         // Don't know why it says: disconnect not implemented, when there is a disconnect()
         // method just a few lines above. Added invocation to it and changed warn into info. --Ceriel
-        vclogger.info("Hub lost connection to " + peer.hubAddressAsString + " (disconnect not implemented!)", e);
+        if (vclogger.isInfoEnabled()) {
+            vclogger.info("Hub lost connection to " + peer.hubAddressAsString + " (disconnect not implemented!)", e);
+        }
     }
 }

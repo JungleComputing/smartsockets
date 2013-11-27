@@ -91,7 +91,9 @@ public class Reverse extends MessagingModule {
 
     private void storeReply(int requestID, String reply) {
 
-        logger.debug("Storing reply: [" + requestID + "] " + reply);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Storing reply: [" + requestID + "] " + reply);
+        }
 
         synchronized (replies) {
             if (replies.containsKey(requestID)) {
@@ -103,7 +105,9 @@ public class Reverse extends MessagingModule {
 
     private void storeRequest(int requestID) {
 
-        logger.debug("Storing request: [" + requestID + "]");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Storing request: [" + requestID + "]");
+        }
 
         synchronized (replies) {
             replies.put(requestID, null);
@@ -118,7 +122,9 @@ public class Reverse extends MessagingModule {
             result = replies.remove(requestID);
         }
 
-        logger.debug("Removing request: [" + requestID + "] " + result);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Removing request: [" + requestID + "] " + result);
+        }
 
         return result;
     }
@@ -131,8 +137,9 @@ public class Reverse extends MessagingModule {
             result = replies.get(requestID);
         }
 
-        logger.debug("Check request: [" + requestID + "] " + result);
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Check request: [" + requestID + "] " + result);
+        }
         return (result != null);
     }
 

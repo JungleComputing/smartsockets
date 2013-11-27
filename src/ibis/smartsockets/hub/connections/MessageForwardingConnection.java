@@ -168,8 +168,10 @@ public abstract class MessageForwardingConnection extends BaseConnection {
         ClientConnection c = connections.getClient(cm.getTarget());
 
         if (c == null) {
-            meslogger.debug("Cannot find client address locally: "
-                    + cm.getTarget());
+            if (meslogger.isDebugEnabled()) {
+                meslogger.debug("Cannot find client address locally: "
+                        + cm.getTarget());
+            }
             return false;
         }
 
@@ -435,8 +437,10 @@ public abstract class MessageForwardingConnection extends BaseConnection {
             // Connection doesn't exist. It may already be closed by the other
             // side due to a timeout. Send a close back to inform the sender
             // that the connection does no longer exist...
-            vclogger.info("Lost message! " + index + "[" + size
-                    + "] target VC not found!");
+            if (vclogger.isInfoEnabled()) {
+                vclogger.info("Lost message! " + index + "[" + size
+                        + "] target VC not found!");
+            }
 
             stats.messagesLost++;
 
@@ -876,15 +880,19 @@ public abstract class MessageForwardingConnection extends BaseConnection {
                     if (indirect != null && indirect.haveConnection()) {
                         mf = connections.getHub(indirect.hubAddress);
                     } else {
-                        vclogger.info("Failed to find indirection for hub: "
-                                + targetHub
+                        if (vclogger.isInfoEnabled()) {
+                            vclogger.info("Failed to find indirection for hub: "
+                                    + targetHub
+                                    + " during virtual connection setup (" + source
+                                    + " -> " + target + ") : " + index);
+                        }
+                    }
+                } else {
+                    if (vclogger.isInfoEnabled()) {
+                        vclogger.info("Failed to find hub: " + targetHub
                                 + " during virtual connection setup (" + source
                                 + " -> " + target + ") : " + index);
                     }
-                } else {
-                    vclogger.info("Failed to find hub: " + targetHub
-                            + " during virtual connection setup (" + source
-                            + " -> " + target + ") : " + index);
                 }
             }
         }
