@@ -66,6 +66,8 @@ public class NetworkUtils {
         // TODO: add ipv6 ???
     };
 
+    private static String localHostname;
+
     private NetworkUtils() {
         // No instance allowed
     }
@@ -607,13 +609,17 @@ public class NetworkUtils {
         return false;
     }
 
-    public static String getHostname() throws IOException {
+    public static synchronized String getHostname() throws IOException {
 
+        if (localHostname != null) {
+            return localHostname;
+        }
         try {
             InetAddress a = InetAddress.getLocalHost();
 
             if (a != null) {
-                return a.getHostName();
+                localHostname = a.getHostName();
+                return localHostname;
             }
         } catch (Exception ex) {
             // ignore
@@ -624,7 +630,8 @@ public class NetworkUtils {
         for (InetAddress a : adds) {
 
             try {
-                return a.getHostName();
+                localHostname = a.getHostName();
+                return localHostname;
             } catch (Exception e) {
                 // ignore
             }
