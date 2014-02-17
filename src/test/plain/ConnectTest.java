@@ -24,17 +24,17 @@ public class ConnectTest {
 
         boolean pingpong = false;
 
-        for (int i=0;i<args.length;i++) {
+        for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-repeat")) {
-                repeat = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                repeat = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
 
             } else if (args[i].equals("-count")) {
-                count = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                count = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
@@ -45,37 +45,37 @@ public class ConnectTest {
                 targets--;
 
             } else if (args[i].equals("-serverport")) {
-                sport = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                sport = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
 
             } else if (args[i].equals("-clientport")) {
-                cport = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                cport = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
 
             } else if (args[i].equals("-delay")) {
-                delay = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                delay = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
             }
         }
 
-        InetSocketAddress [] targetAds = new InetSocketAddress[targets];
+        InetSocketAddress[] targetAds = new InetSocketAddress[targets];
         int index = 0;
 
-        for (int i=0;i<args.length-1;i++) {
-            if (args[i] != null && args[i+1] != null) {
-                targetAds[index++] = new InetSocketAddress(args[i], Integer.parseInt(args[i+1]));
+        for (int i = 0; i < args.length - 1; i++) {
+            if (args[i] != null && args[i + 1] != null) {
+                targetAds[index++] = new InetSocketAddress(args[i],
+                        Integer.parseInt(args[i + 1]));
             }
         }
-
 
         try {
             if (index > 0) {
@@ -108,9 +108,12 @@ public class ConnectTest {
                                 backoff = 100;
                             } catch (NoRouteToHostException e) {
 
-                                System.err.println("Connect failed: " + e.getMessage());
+                                System.err.println("Connect failed: "
+                                        + e.getMessage());
 
-                                if (e.getMessage().trim().equals("Cannot assign requested address")) {
+                                if (e.getMessage()
+                                        .trim()
+                                        .equals("Cannot assign requested address")) {
 
                                     System.err.println("Sleep: " + backoff);
 
@@ -161,6 +164,7 @@ public class ConnectTest {
 
                 System.out.println("Creating server socket");
 
+                @SuppressWarnings("resource")
                 ServerSocket ss = new ServerSocket();
                 ss.setReuseAddress(true);
 

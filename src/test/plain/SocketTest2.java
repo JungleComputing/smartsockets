@@ -10,7 +10,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-
 public class SocketTest2 {
 
     private final static int PORT = 8899;
@@ -35,7 +34,8 @@ public class SocketTest2 {
                 Socket.setSocketImplFactory(f);
                 ServerSocket.setSocketFactory(f);
             } catch (Exception e) {
-                throw new Error("Failed to install SocketFactory type: " + type, e);
+                throw new Error(
+                        "Failed to install SocketFactory type: " + type, e);
             }
             return;
         }
@@ -54,18 +54,17 @@ public class SocketTest2 {
         boolean smart = false;
         boolean pingpong = false;
 
-
-        for (int i=0;i<args.length;i++) {
+        for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-repeat")) {
-                repeat = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                repeat = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
 
             } else if (args[i].equals("-count")) {
-                count = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                count = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
@@ -76,8 +75,8 @@ public class SocketTest2 {
                 targets--;
 
             } else if (args[i].equals("-type")) {
-                type = args[i+1].trim();
-                args[i] = args[i+1] = null;
+                type = args[i + 1].trim();
+                args[i] = args[i + 1] = null;
                 i++;
                 targets--;
             }
@@ -90,13 +89,13 @@ public class SocketTest2 {
         setSocketImplFactory(type);
 
         try {
-            SocketAddress [] targetAds = new SocketAddress[targets];
+            SocketAddress[] targetAds = new SocketAddress[targets];
             int index = 0;
 
-            for (int i=0;i<args.length-1;i++) {
-                if (args[i] != null && args[i+1] != null) {
-                    targetAds[index++] = SmartSocketAddress.create(
-                            args[i], Integer.parseInt(args[i+1]), smart);
+            for (int i = 0; i < args.length - 1; i++) {
+                if (args[i] != null && args[i + 1] != null) {
+                    targetAds[index++] = SmartSocketAddress.create(args[i],
+                            Integer.parseInt(args[i + 1]), smart);
                 }
             }
 
@@ -163,6 +162,7 @@ public class SocketTest2 {
 
                 System.out.println("Creating server socket");
 
+                @SuppressWarnings("resource")
                 ServerSocket ss = new ServerSocket(PORT, 100);
 
                 System.out.println("Created server on " + ss.toString());

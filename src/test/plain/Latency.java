@@ -19,24 +19,24 @@ public class Latency {
         int count = COUNT;
         int port = PORT;
 
-        for (int i=0;i<args.length;i++) {
+        for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-repeat")) {
-                repeat = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                repeat = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
 
             } else if (args[i].equals("-count")) {
-                count = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                count = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
 
             } else if (args[i].equals("-port")) {
-                port = Integer.parseInt(args[i+1]);
-                args[i+1] = null;
+                port = Integer.parseInt(args[i + 1]);
+                args[i + 1] = null;
                 args[i] = null;
                 targets -= 2;
                 i++;
@@ -44,15 +44,15 @@ public class Latency {
             }
         }
 
-        InetSocketAddress [] targetAds = new InetSocketAddress[targets];
+        InetSocketAddress[] targetAds = new InetSocketAddress[targets];
         int index = 0;
 
-        for (int i=0;i<args.length-1;i++) {
-            if (args[i] != null && args[i+1] != null) {
-                targetAds[index++] = new InetSocketAddress(args[i], Integer.parseInt(args[i+1]));
+        for (int i = 0; i < args.length - 1; i++) {
+            if (args[i] != null && args[i + 1] != null) {
+                targetAds[index++] = new InetSocketAddress(args[i],
+                        Integer.parseInt(args[i + 1]));
             }
         }
-
 
         try {
             if (index > 0) {
@@ -71,7 +71,8 @@ public class Latency {
 
                     s.setTcpNoDelay(true);
 
-                    DataOutputStream out = new DataOutputStream(s.getOutputStream());
+                    DataOutputStream out = new DataOutputStream(
+                            s.getOutputStream());
                     DataInputStream in = new DataInputStream(s.getInputStream());
 
                     out.writeInt(count);
@@ -90,9 +91,8 @@ public class Latency {
 
                         time = System.currentTimeMillis() - time;
 
-                        System.out.println(count + " rtts " + time
-                                + " ms. -> " + (((double) time) / count)
-                                + "ms/rt");
+                        System.out.println(count + " rtts " + time + " ms. -> "
+                                + (((double) time) / count) + "ms/rt");
 
                     }
 
@@ -105,6 +105,7 @@ public class Latency {
 
                 System.out.println("Creating server socket");
 
+                @SuppressWarnings("resource")
                 ServerSocket ss = new ServerSocket(port, 100);
 
                 System.out.println("Created server on " + ss.toString());
@@ -114,7 +115,8 @@ public class Latency {
 
                     s.setTcpNoDelay(true);
 
-                    DataOutputStream out = new DataOutputStream(s.getOutputStream());
+                    DataOutputStream out = new DataOutputStream(
+                            s.getOutputStream());
                     DataInputStream in = new DataInputStream(s.getInputStream());
 
                     count = in.readInt();
@@ -140,5 +142,4 @@ public class Latency {
             e.printStackTrace(System.err);
         }
     }
-}
-;
+};

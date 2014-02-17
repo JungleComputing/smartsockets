@@ -9,13 +9,13 @@ import java.net.Socket;
 
 //import ch.ethz.ssh2.Connection;
 //import ch.ethz.ssh2.LocalStreamForwarder;
-
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.LocalStreamForwarder;
 
 public class Simple {
 
     private static String filename = "/home/jason/.ssh/id_rsa";
+
     // or "~/.ssh/id_dsa"
 
     /**
@@ -39,9 +39,11 @@ public class Simple {
 
         try {
 
+            @SuppressWarnings("resource")
             ServerSocket ss = new ServerSocket(0);
 
-            System.out.println("Server listening on port: " + ss.getLocalPort());
+            System.out
+                    .println("Server listening on port: " + ss.getLocalPort());
 
             Socket s = ss.accept();
 
@@ -54,7 +56,6 @@ public class Simple {
 
             out.writeUTF("Hello");
             out.flush();
-
 
             out.close();
             in.close();
@@ -78,15 +79,16 @@ public class Simple {
             String keyfilePass = "joespass"; // will be ignored if not needed
 
             boolean isAuthenticated = conn.authenticateWithPublicKey(user);
-            if (! isAuthenticated) {
-        	    isAuthenticated = conn.authenticateWithPublicKey(user, keyfile, keyfilePass);
+            if (!isAuthenticated) {
+                isAuthenticated = conn.authenticateWithPublicKey(user, keyfile,
+                        keyfilePass);
             }
 
             if (isAuthenticated == false)
                 throw new IOException("Authentication failed.");
 
-            LocalStreamForwarder lsf =
-                conn.createLocalStreamForwarder(host, port);
+            LocalStreamForwarder lsf = conn.createLocalStreamForwarder(host,
+                    port);
 
             DataInputStream in = new DataInputStream(lsf.getInputStream());
             DataOutputStream out = new DataOutputStream(lsf.getOutputStream());
