@@ -1,11 +1,11 @@
 package ibis.smartsockets.direct;
 
+import java.util.StringTokenizer;
+
 import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.util.TypedProperties;
 
-import java.util.StringTokenizer;
-
-class PortRange {
+public class PortRange {
 
     static final class Range {
         final int start;
@@ -18,6 +18,7 @@ class PortRange {
             this.end = end;
         }
 
+        @Override
         public String toString() {
 
             if (start == end) {
@@ -36,12 +37,12 @@ class PortRange {
      * be used from the 'ibis.connect.port_range' property. The property is
      * expected to have the following format:
      *
-     *  RANGE(,RANGE)*
+     * RANGE(,RANGE)*
      *
      * where RANGE has the format
      *
-     *   P         to specify a single port number
-     *   P1-P2     to specify a port range from P1 to P2 (inclusive)
+     * P to specify a single port number P1-P2 to specify a port range from P1
+     * to P2 (inclusive)
      *
      * When the property is not set, the getPort method will always return 0;
      */
@@ -69,7 +70,7 @@ class PortRange {
             } else {
                 // it's a range
                 start = Integer.parseInt(t.substring(0, index));
-                end = Integer.parseInt(t.substring(index+1));
+                end = Integer.parseInt(t.substring(index + 1));
             }
 
             add(start, end);
@@ -79,15 +80,18 @@ class PortRange {
     /**
      * Add a new port range to this datastructure
      *
-     * @param start of the range (inclusive)
-     * @param end of the range (inclusive)
+     * @param start
+     *            of the range (inclusive)
+     * @param end
+     *            of the range (inclusive)
      */
     private void add(int start, int end) {
         Range range = new Range(start, end);
 
         if (ranges == null) {
             ranges = range;
-            range.next = null;;
+            range.next = null;
+            ;
         } else {
             range.next = ranges;
             ranges = range;
@@ -124,6 +128,7 @@ class PortRange {
         return port;
     }
 
+    @Override
     public String toString() {
 
         StringBuilder tmp = new StringBuilder("[");
