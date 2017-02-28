@@ -1,5 +1,14 @@
 package ibis.smartsockets.hub;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.smartsockets.SmartSocketsProperties;
 import ibis.smartsockets.direct.DirectSocket;
 import ibis.smartsockets.direct.DirectSocketAddress;
@@ -15,27 +24,18 @@ import ibis.smartsockets.hub.state.StateCounter;
 import ibis.smartsockets.util.NetworkUtils;
 import ibis.smartsockets.util.TypedProperties;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Arrays;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public final class Hub extends Thread implements StatisticsCallback {
 
     private static int GOSSIP_SLEEP = 3000;
 
     private static final int DEFAULT_DISCOVERY_PORT = 24545;
-    private static final int DEFAULT_ACCEPT_PORT    = 17878;
+    private static final int DEFAULT_ACCEPT_PORT = 17878;
 
-    private static final Logger misclogger =
-        LoggerFactory.getLogger("ibis.smartsockets.hub.misc");
+    private static final Logger misclogger = LoggerFactory
+            .getLogger("ibis.smartsockets.hub.misc");
 
-    private static final Logger goslogger =
-        LoggerFactory.getLogger("ibis.smartsockets.hub.gossip");
+    private static final Logger goslogger = LoggerFactory
+            .getLogger("ibis.smartsockets.hub.gossip");
 
     private final boolean printStatistics;
     private final long STAT_FREQ;
@@ -59,8 +59,8 @@ public final class Hub extends Thread implements StatisticsCallback {
     private long nextStats;
 
     // FIXME: Quick hack
-    private MessageForwardingConnectionStatistics mfcStats =
-        new MessageForwardingConnectionStatistics("Connection(*)");
+    private MessageForwardingConnectionStatistics mfcStats = new MessageForwardingConnectionStatistics(
+            "Connection(*)");
 
     private boolean done = false;
 
@@ -68,18 +68,18 @@ public final class Hub extends Thread implements StatisticsCallback {
 
         super("Hub");
 
-        boolean allowDiscovery =
-            p.booleanProperty(SmartSocketsProperties.DISCOVERY_ALLOWED, false);
+        boolean allowDiscovery = p.booleanProperty(
+                SmartSocketsProperties.DISCOVERY_ALLOWED, false);
 
-        String [] clusters =
-            p.getStringList(SmartSocketsProperties.HUB_CLUSTERS, ",", null);
+        String[] clusters = p.getStringList(SmartSocketsProperties.HUB_CLUSTERS,
+                ",", null);
 
         if (clusters == null || clusters.length == 0) {
             clusters = new String[] { "*" };
         }
 
-        boolean allowSSHForHub = p.booleanProperty(
-                SmartSocketsProperties.HUB_SSH_ALLOWED, true);
+        boolean allowSSHForHub = p
+                .booleanProperty(SmartSocketsProperties.HUB_SSH_ALLOWED, true);
 
         if (allowSSHForHub) {
             if (misclogger.isInfoEnabled()) {
@@ -103,16 +103,19 @@ public final class Hub extends Thread implements StatisticsCallback {
 
         virtualConnections = new VirtualConnections();
 
-        int port = p.getIntProperty(SmartSocketsProperties.HUB_PORT, DEFAULT_ACCEPT_PORT);
+        int port = p.getIntProperty(SmartSocketsProperties.HUB_PORT,
+                DEFAULT_ACCEPT_PORT);
 
-        boolean delegate = p.booleanProperty(SmartSocketsProperties.HUB_DELEGATE);
+        boolean delegate = p
+                .booleanProperty(SmartSocketsProperties.HUB_DELEGATE);
 
         DirectSocketAddress delegationAddress = null;
 
         if (delegate) {
-            String tmp = p.getProperty(SmartSocketsProperties.HUB_DELEGATE_ADDRESS);
+            String tmp = p
+                    .getProperty(SmartSocketsProperties.HUB_DELEGATE_ADDRESS);
 
-           // System.err.println("**** HUB USING DELEGATION TO: " + tmp);
+            // System.err.println("**** HUB USING DELEGATION TO: " + tmp);
 
             if (misclogger.isDebugEnabled()) {
                 misclogger.debug("**** HUB USING DELEGATION TO: " + tmp);
@@ -121,12 +124,12 @@ public final class Hub extends Thread implements StatisticsCallback {
             try {
                 delegationAddress = DirectSocketAddress.getByAddress(tmp);
             } catch (Exception e) {
-                throw new IOException("Failed to parse delegation address: \""
-                        + tmp + "\"");
+                throw new IOException(
+                        "Failed to parse delegation address: \"" + tmp + "\"");
             }
         }
 
-///        System.err.println("Port = " + port);
+        /// System.err.println("Port = " + port);
 
         // NOTE: These are not started until later. We first need to init the
         // rest of the world!
@@ -150,7 +153,7 @@ public final class Hub extends Thread implements StatisticsCallback {
             // instead.
             try {
                 name = NetworkUtils.getHostname();
-            }  catch (Exception e) {
+            } catch (Exception e) {
                 if (misclogger.isInfoEnabled()) {
                     misclogger.info("Failed to find simple name for hub!");
                 }
@@ -164,7 +167,8 @@ public final class Hub extends Thread implements StatisticsCallback {
         String color = p.getProperty(SmartSocketsProperties.HUB_VIZ_INFO);
 
         // Create a description for the local machine.
-        HubDescription localDesc = new HubDescription(name, local, state, true, color);
+        HubDescription localDesc = new HubDescription(name, local, state, true,
+                color);
         localDesc.setReachable();
         localDesc.setCanReachMe();
 
@@ -184,14 +188,14 @@ public final class Hub extends Thread implements StatisticsCallback {
         }
 
         if (allowDiscovery) {
-            String [] suffixes = new String[clusters.length];
+            String[] suffixes = new String[clusters.length];
 
             // TODO: what does the + do exactly ???
 
             // Check if there is a * in the list of clusters. If so, there is no
             // point is passing any other values. Note that there may also be a
             // '+' which means 'any machine -NOT- belonging to a cluster.
-            for (int i=0;i<clusters.length;i++) {
+            for (int i = 0; i < clusters.length; i++) {
                 if (clusters[i].equals("*") && clusters.length > 0) {
                     suffixes = new String[] { "*" };
                     break;
@@ -206,11 +210,12 @@ public final class Hub extends Thread implements StatisticsCallback {
                     DEFAULT_DISCOVERY_PORT);
 
             discovery = new Discovery(dp, 0, 0);
-            discovery.answeringMachine("Any Proxies?", suffixes, local.toString());
+            discovery.answeringMachine("Any Proxies?", suffixes,
+                    local.toString());
 
             if (misclogger.isInfoEnabled()) {
-                misclogger.info("Hub will reply to discovery requests from: " +
-                        Arrays.deepToString(suffixes));
+                misclogger.info("Hub will reply to discovery requests from: "
+                        + Arrays.deepToString(suffixes));
             }
 
         } else {
@@ -224,8 +229,10 @@ public final class Hub extends Thread implements StatisticsCallback {
             goslogger.info("Start Gossiping!");
         }
 
-        printStatistics = p.booleanProperty(SmartSocketsProperties.HUB_STATISTICS, false);
-        STAT_FREQ = p.getIntProperty(SmartSocketsProperties.HUB_STATS_INTERVAL, 60000);
+        printStatistics = p
+                .booleanProperty(SmartSocketsProperties.HUB_STATISTICS, false);
+        STAT_FREQ = p.getIntProperty(SmartSocketsProperties.HUB_STATS_INTERVAL,
+                60000);
 
         nextStats = System.currentTimeMillis() + STAT_FREQ;
 
@@ -235,7 +242,7 @@ public final class Hub extends Thread implements StatisticsCallback {
             writeAddressFile();
         }
 
-        //make this a daemon thread to keep Ibis-Deploy et al from "hanging"
+        // make this a daemon thread to keep Ibis-Deploy et al from "hanging"
         setDaemon(true);
         start();
     }
@@ -280,7 +287,8 @@ public final class Hub extends Thread implements StatisticsCallback {
 
                 if (s != null) {
                     try {
-                        DirectSocketAddress tmp = DirectSocketAddress.getByAddress(s);
+                        DirectSocketAddress tmp = DirectSocketAddress
+                                .getByAddress(s);
 
                         if (!local.sameProcess(tmp)) {
                             if (misclogger.isInfoEnabled()) {
@@ -299,10 +307,10 @@ public final class Hub extends Thread implements StatisticsCallback {
 
     private void gossip() {
 
-        if (goslogger.isInfoEnabled()) {
-            goslogger.info("Starting gossip round (local state = "
+        if (goslogger.isDebugEnabled()) {
+            goslogger.debug("Starting gossip round (local state = "
                     + state.get() + ")");
-            goslogger.info("I know the following hubs:\n" + hubs.toString());
+            goslogger.debug("I know the following hubs:\n" + hubs.toString());
         }
 
         ConnectionsSelector selector = new ConnectionsSelector();
@@ -324,7 +332,7 @@ public final class Hub extends Thread implements StatisticsCallback {
         return acceptor.getLocal();
     }
 
-    public DirectSocketAddress [] knownHubs() {
+    public DirectSocketAddress[] knownHubs() {
         return hubs.knownHubs();
     }
 
@@ -383,34 +391,30 @@ public final class Hub extends Thread implements StatisticsCallback {
 
         System.err.println("--- HUB Statistics ---");
 
-        System.err.println(" Connections : " + connections.numberOfConnections());
+        System.err
+                .println(" Connections : " + connections.numberOfConnections());
         System.err.println("  - hubs     : " + connections.numberOfHubs());
         System.err.println("  - clients  : " + connections.numberOfClients());
 
         System.err.println("--- Connection Statistics ---");
 
         /*
-        DirectSocketAddress [] hubs = connections.hubs();
-
-        for (DirectSocketAddress a : hubs) {
-
-            HubConnection h = connections.getHub(a);
-
-            if (h != null) {
-               h.printStatistics();
-            }
-        }
-
-        DirectSocketAddress [] clients = connections.clients();
-
-        for (DirectSocketAddress a : clients) {
-
-            ClientConnection c = connections.getClient(a);
-
-            if (c != null) {
-               c.printStatistics();
-            }
-        }*/
+         * DirectSocketAddress [] hubs = connections.hubs();
+         * 
+         * for (DirectSocketAddress a : hubs) {
+         * 
+         * HubConnection h = connections.getHub(a);
+         * 
+         * if (h != null) { h.printStatistics(); } }
+         * 
+         * DirectSocketAddress [] clients = connections.clients();
+         * 
+         * for (DirectSocketAddress a : clients) {
+         * 
+         * ClientConnection c = connections.getClient(a);
+         * 
+         * if (c != null) { c.printStatistics(); } }
+         */
 
         synchronized (mfcStats) {
             mfcStats.print(System.err, " ");
@@ -419,12 +423,13 @@ public final class Hub extends Thread implements StatisticsCallback {
         nextStats = now + STAT_FREQ;
     }
 
+    @Override
     public void run() {
 
         while (!getDone()) {
             try {
-                if (goslogger.isInfoEnabled()) {
-                    goslogger.info("Sleeping for " + GOSSIP_SLEEP + " ms.");
+                if (goslogger.isDebugEnabled()) {
+                    goslogger.debug("Sleeping for " + GOSSIP_SLEEP + " ms.");
                 }
                 Thread.sleep(GOSSIP_SLEEP);
             } catch (InterruptedException e) {
@@ -435,6 +440,5 @@ public final class Hub extends Thread implements StatisticsCallback {
             statistics();
         }
     }
-
 
 }
