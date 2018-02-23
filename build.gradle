@@ -120,7 +120,7 @@ bintray {
 	name = 'smartsockets'
 	userOrg = "$user"
 	vcsUrl = 'https://github.com/junglecomputing/smartsockets.git'
-	licenses = ['Apache-1.0']
+	licenses = ['Apache-2.0']
 	version {
 	    name = "$version"
 	    desc = "$version"
