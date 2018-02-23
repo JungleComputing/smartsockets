@@ -1,0 +1,114 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "com.jfrog.bintray" version "1.7.3"
+}
+
+version = '1.70'
+group = "junglecomputing"
+
+defaultTasks 'jar'
+
+// Prevent warning about POM relocation not being fully supported
+configurations.all {
+    resolutionStrategy {
+        force 'xml-apis:xml-apis:1.4.01'
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+    maven {
+	// For sbbi-upnplib
+	url 'http://maven.nuiton.org/release'
+    }
+    maven {
+	// Added for stuff that is not in jcenter yet.
+	url 'https://dl.bintray.com/cerieljacobs/JungleComputing'
+    }
+}
+
+dependencies {
+    compile group: 'junglecomputing', name: 'touchgraph', version: '1.58'
+    compile group: 'junglecomputing', name: 'sshtrilead', version: 'r13339-CJ'
+    compile group: 'de.javawi.jstun', name: 'jstun', version: '0.7.4'
+    compile group: 'net.sbbi', name: 'sbbi-upnplib', version: '1.0.4'
+    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+    compile group: 'commons-jxpath', name: 'commons-jxpath', version: '1.1'
+    compile group: 'log4j', name: 'log4j', version: '1.2.13'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.21'
+}
+
+def pomConfig = {
+    scm {
+        url "https://github.com/junglecomputing/smartsockets.git"
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+javadoc.failOnError = false
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+	    artifact sourcesJar {
+		classifier "sources"
+	    }
+	    artifact javadocJar {
+		classifier "javadoc"
+	    }
+	    groupId 'junglecomputing'
+	    artifactId 'smartsockets'
+
+	    pom.withXml {
+                def root = asNode()
+                root.appendNode('url', 'https://github.com/junglecomputing/smartsockets.git')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+tasks.withType(Jar) {
+    destinationDir = file("$rootDir/lib")
+}
+
+task copyRuntimeLibs(type: Copy) {
+    into "lib"
+    from configurations.runtime
+}
+
+bintray {
+    user = System.getenv('BINTRAY_NAME')
+    key = System.getenv('BINTRAY_APIKEY')
+    publications = ['mavenJava']
+    pkg {
+	repo = 'JungleComputing'
+	name = 'smartsockets'
+	userOrg = "$user"
+	vcsUrl = 'https://github.com/junglecomputing/smartsockets.git'
+	licenses = ['Apache-1.0']
+	version {
+	    name = "$version"
+	    desc = "$version"
+	    released  = new Date()
+	}
+    }
+}

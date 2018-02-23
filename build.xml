@@ -111,7 +111,7 @@
         <delete failonerror="false" file="${zip}" />
 
         <zip destfile="${zip}">
-            <zipfileset dir="." prefix="smartsockets${version}" includes="external/**,lib/**,*.properties,*.example,notices/**,README.txt,INSTALL.txt,LICENSE.txt,javadoc/**" />
+            <zipfileset dir="." prefix="smartsockets${version}" includes="external/**,lib/**,*.properties,*.example,notices/**,README.md,INSTALL.txt,LICENSE.txt,javadoc/**" />
             <zipfileset dir="." prefix="smartsockets${version}" filemode="755" includes="bin/**" />
         </zip>
     </target>

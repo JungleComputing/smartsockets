@@ -1,11 +1,6 @@
-** SmartSockets 1.60 README **
------------------------------
+# SmartSockets README
 
-This distribution contains version 1.60 of the SmartSockets library. 
-
-
-What is SmartSockets:
----------------------
+## What is SmartSockets:
 
 Tightly coupled parallel applications are increasingly run in Grid 
 environments. Unfortunately, on many Grid sites the ability of machines 
@@ -28,44 +23,39 @@ Nevertheless, the API of SmartSockets is very similar to that of original
 sockets. As a result, converting existing applications to SmartSockets in 
 usually quite straightforward.
 
-
-Requirements:
--------------
+## Requirements:
 
 SmartSockets in implemented in Java, and requires Java 1.5 or higher. 
-To build SmartSockets from source, the ant build system of apache is 
-used (see http://ant.apache.org/ for details).
+To build SmartSockets from source, we use gradle (https://gradle.org)
 
-
-Ideas behind smartsockets:
---------------------------
+## Ideas behind smartsockets
 
 Simply put, SmartSockets attempts to solve the following connectivity 
 problems which are often encoutered in distributed and/or Grid computing:
 
- Firewalls 
+- Firewalls 
     - These prevent direct connections to a machine. Some may also 
       prevent all connections going out of a machine, with the exception 
       of certain 'trusted' traffic, such as SSH or HTTP.
  
- NAT 
+- NAT 
     - Prevent direct connections to a machine and causes machines to
       have non-unqiue IP addresses (site-local addresses). 
  
- Multi homing
+- Multi homing
     - When machines have multiple IP addresses it is not always clear
       which address you should use when trying to connect to it. You 
       may even need to use different addresses depending on where the 
       connection originates.
 
- Non-routed networks 
+- Non-routed networks 
    - In some sites (especially compute clusters) internal machines may 
      only be connected to a local network which does not route any data
      to/from the internet. These machines can only be accessed through a 
      special frontend machine which is connected to both the internet and 
      the local network.
 
- Incorrect host names
+- Incorrect host names
    - Many machine use incorrectly configured hostnames. Publishing the 
      hostname of a machine as its contact address will result in 
      connectivity problems, because the hostname can not be properly 
@@ -139,33 +129,32 @@ communication was possible at all.
 
 Please see the paper at: 
 
- http://projects.gforge.cs.vu.nl/ibis/publications/maassen_hpdc_2007.ps
+http://www.cs.vu.nl/ibis/papers/maassen_hpdc_2007.ps
 
 for more information on the ideas behind smartsockets.
 
 
-Programming Model:
-------------------
+## Programming Model:
 
 The programming model of SmartSockets is very similar to that of regular 
 sockets; using a socket factory you can create server sockets (for 
 receiving incoming connections) and client sockets (for creating outgoing 
 connections). In SmartSocket this socketfactory is implemented by the 
 folowing class:
-
-   ibis.smartsockets.virtual.VirtualSocketFactory
-
+```
+ibis.smartsockets.virtual.VirtualSocketFactory
+```
 This class contains several methods for creating socket factory instances. 
 Once a VirtualSocketFactory is creates you van use the 
-
-   VirtualSocketFactory.createServerSocket(...) 
-   VirtualSocketFactory.createClientSocket(...)
-
+```
+VirtualSocketFactory.createServerSocket(...) 
+VirtualSocketFactory.createClientSocket(...)
+```
 methods to create server and client sockets. For convenience, several versions 
 of these calls exist (with different signatures).
 
 To establish a connection, you need to know the address of the server socket 
-you want the client to connect to. This address is an VirtualSocketAddress object,  
+you want the client to connect to. This address is an VirtualSocketAddress object,
 an extension of the regular java.net.SocketAddress. You can retrieve the 
 VirtualSocketAddress from the server socket, using the 'getLocalSocketAddres'
 method. Like regular SocketAddress, this object is Serializable, so it can be 
@@ -177,9 +166,7 @@ address. Instead, it may contain several IP addresses, SSH contact information,
 clustering information, etc. Any information that may be needed to read the 
 server socket is stored in its VirtualSocketAddress.
 
-
-Creating a hub network:
------------------------
+## Creating a hub network:
 
 Before runnning a SmartSockets application, a hub network needs to be created.
 In many cases, is is sufficient to start a single hub in a location that is 
@@ -187,18 +174,18 @@ reachable from all the intended participants.
 
 Starting a hub can be done using the following script in the smartsockets 
 distribution:
-
+```
    ./bin/hub
-
+```
 When started, the hub will print it's contact address. For example:
-
-   "Hub running on: 130.37.193.15-17878~jason"
-
+```
+   Hub running on: 130.37.193.15-17878~jason
+```
 If multiple hubs are used, this address can be provided as a parameter to  
 other hubs, like this: 
-
+```
    ./bin/hub 130.37.193.15-17878~jason  
-
+```
 This second hub will then attempt to connect to it. Note that hubs can only 
 use direct connections or SSH tunneling. Since they are part of the SmartSockets 
 implementation, they cannot use the advanced connection setup schemes themselves.
@@ -225,106 +212,101 @@ some experimentation by the user. Some simple guidelines apply however:
     site. Then stop all of them and restart them, provinding a list of all other 
     hubs.  
 
-
-Running applications:
----------------------
+## Running applications:
 
 Once the hub network is running, the application using SmartSockets can be 
 started. The exact way in which this is done is application dependant, but 
 each of the application instances does need to be able to find their local 
 hub. There are (at least) three ways of doing this:
 
-  1) By providing a command line parameter when you start Java. 
+1) By providing a command line parameter when you start Java. 
+```
+java ... -Dsmartsockets.hub.addresses=130.37.193.15-17878~jason ...
+```
+This option will set a property which allows SmartSockets to find the 
+hub. Note that multiple (comma separated) hub addresses can be provided.
+SmartSockets will try to connect to them in the order provided, and use 
+the first one it can reach.
 
-       java ... -Dsmartsockets.hub.addresses=130.37.193.15-17878~jason ...
-
-     This option will set a property which allows SmartSockets to find the 
-     hub. Note that multiple (comma separated) hub addresses can be provided.
-     SmartSockets will try to connect to them in the order provided, and use 
-     the first one it can reach.
-
-  2) By creating a 'smartsockets.properties' file that contains the line:
-  
-       smartsockets.hub.addresses=130.37.193.15-17878~jason,...
-
-     Make sure that this file can be found by SmartSockets, either by putting 
-     it in the local directry from which the application is run, or by adding 
-     its location to your CLASSPATH.
+2) By creating a 'smartsockets.properties' file that contains the line:
+```
+smartsockets.hub.addresses=130.37.193.15-17878~jason,...
+```
+Make sure that this file can be found by SmartSockets, either by putting 
+it in the local directry from which the application is run, or by adding 
+its location to your CLASSPATH.
  
-  3) By creating a file that contains the line shown in 2) and then refering 
-     to it when you start java:
-
-       java ... -Dsmartsockets.file=<path/to/file> ...
+3) By creating a file that contains the line shown in 2) and then refering 
+to it when you start java:
+```
+java ... -Dsmartsockets.file=<path/to/file> ...
+```
 
 Besides these (almost) mandatory options, SmartSockets has many other settings 
 that can be tweaked. The 'smartsockets.properties.example' file shows most of 
 them, and includes a resonably extensive explanation of what they do. 
 
-Note that to use SmartSockets, you must include the file 'smartsockets-1.4.jar'
-and all dependancies in the 'external' directory of the distribution into 
-you classpath. The 'bin/app' script in the distribution illustrates how this can 
+Note that to use SmartSockets, you must include the file 'smartsockets-1.70.jar'
+and all dependencies in the 'lib' directory of the distribution into 
+your classpath. The 'bin/app' script in the distribution illustrates how this can 
 be done. An example is shown below. 
 
-
-Example application:
---------------------
+## Example application:
 
 PLEASE NOTE: The example below works fine, but others may no longer work (or make 
-             any sense). They need to be tested for the final release!!
+any sense). They need to be tested for the final release!!
 
 The SmartSockets distribution contains several test applications and benchmarks 
-in the 'test.*' packages. As an example, we will now describe how to run one of 
+in the 'test' packages. As an example, we will now describe how to run one of 
 these applications, a simple latency test.
 
 We start by creating a hub network as described above. In our case, a single hub 
 is sufficient:
-   
+```   
    ./bin/hub
-  
+```
 Which prints: 
-
+```
   130.37.193.15-17878~jason
-
+```
 We now start one of the test applications using a script in the distribution:
-
-  ./bin/app test.virtual.simple.Latency \
+```
+./bin/app test.virtual.simple.Latency \
        -Dsmartsockets.hub.addresses=130.37.193.15-17878~jason
-
+```
 Note that we provide the hub contact address to the application using the '-D'
 option, as described above. This application now prints:
-
-  Creating server
-  Created server on 130.37.193.15-44672:3000@130.37.193.15-17878~jason#
-  Server waiting for connections
-
+```
+Creating server
+Created server on 130.37.193.15-44672:3000@130.37.193.15-17878~jason#
+Server waiting for connections
+```
 The application has created a serversocket, and printed its content as a string
 (the "130.37.193.15-44672:3000@130.37.193.15-17878~jason#"). As you can see, the 
 hub address is also part of this data.
 
 We now start the client side of the application on a different machine, a laptop
 behind an ADSL modem which does NAT:
-
-  ./bin/app test.virtual.simple.Latency \
+```
+./bin/app test.virtual.simple.Latency \
         -Dsmartsockets.hub.addresses=130.37.193.15-17878~jason \
         -target 130.37.193.15-44672:3000@130.37.193.15-17878~jason# \
         -count 100
-
+```
 This commandline instructs the application to connect to the server, and then 
 measure the time it takes to do 100 round trip messages. The output: 
-
-  Created connection to 130.37.193.15-44672:3000@130.37.193.15-17878~jason#
-  Configured socket: 
-   sendbuffer     = 131071
-   receiverbuffer = 131071
-   no delay       = true
-  Starting test
-  Test took 808 ms. RTT = 8.08 ms.  
-
+```
+Created connection to 130.37.193.15-44672:3000@130.37.193.15-17878~jason#
+Configured socket: 
+sendbuffer     = 131071
+receiverbuffer = 131071
+no delay       = true
+Starting test
+Test took 808 ms. RTT = 8.08 ms.  
+```
 shows that the connection and test was succesfull.
 
-
-Known bugs and limitations:
----------------------------
+## Known bugs and limitations:
 
 Currently, SmartSockets has the following bugs and limitations:
 
@@ -366,8 +348,7 @@ happen to run into a network problem we haven't thought of, we like to
 know! Contact information can be found below. 
 
 
-Future work:
-------------
+## Future work:
 
 There are plans to extend SmartSockets in the following ways:
 
@@ -393,35 +374,27 @@ There are plans to extend SmartSockets in the following ways:
    yet. 
 
 
-Contact:
---------
+## Contact:
 
 More information can be found on the Ibis project website:
 
   http://www.cs.vu.nl/ibis/
 
-The latest SmartSockets source repository tree is accessible through SVN at
-https://gforge.cs.vu.nl/svn/ibis/smartsockets/trunk. You need an account on
-https://gforge.cs.vu.nl/ to access the repositories there. You can
-create an account by clicking the 'New Account' button on the
-https://gforge.cs.vu.nl/ page.
+The latest SmartSockets source repository tree is accessible on github at
+https://github.com/junglecomputing/smartsockets.git.
 
-You can send bug reports, feature requests, cries for help, or descriptions of 
-interesting way in which you have used SmartSockets to: jason at cs.vu.nl 
-
-
-Legal stuff:
-------------
+## Legal stuff:
 
 SmartSockets has been developed as part of the Ibis project, a grid software 
 project of the Computer Systems group of the Computer Science department of 
 the Faculty of Sciences at the Vrije Universiteit, Amsterdam, The Netherlands. 
-The main goal of the Ibis project is to create an efficient Java-based 
+This project is also known as the JungleComputing project.
+The main goal of the Ibis/JungleComputing project is to create an efficient Java-based 
 platform for grid computing.
 
 SmartSockets is free software. See the file "LICENSE.txt" for copying permissions.
 
-** Third party libraries included with SmartSockets **
+## Third party libraries included with SmartSockets
 
 This product includes software developed by the Apache Software
 Foundation (http://www.apache.org/).

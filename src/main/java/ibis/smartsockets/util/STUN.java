@@ -64,7 +64,7 @@ public class STUN {
                             + ":" + port);
                 }
 
-                DiscoveryTest test = new DiscoveryTest(iaddress, server, port);
+                DiscoveryTest test = new DiscoveryTest(iaddress, port, server, 3478);
 
                 synchronized (this) {
                     result = test.test();
