@@ -17,15 +17,20 @@ package test.ssh;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.apache.sshd.client.SshClient;
+
+import ibis.smartsockets.util.ssh.LocalStreamForwarder;
+import ibis.smartsockets.util.ssh.PasswordCredential;
+import ibis.smartsockets.util.ssh.SSHConnection;
+import ibis.smartsockets.util.ssh.SSHUtil;
+
 //import ch.ethz.ssh2.Connection;
 //import ch.ethz.ssh2.LocalStreamForwarder;
-import com.trilead.ssh2.Connection;
-import com.trilead.ssh2.LocalStreamForwarder;
+//import com.trilead.ssh2.Connection;
+//import com.trilead.ssh2.LocalStreamForwarder;
 
 public class Simple {
 
@@ -57,8 +62,7 @@ public class Simple {
             @SuppressWarnings("resource")
             ServerSocket ss = new ServerSocket(0);
 
-            System.out
-                    .println("Server listening on port: " + ss.getLocalPort());
+            System.out.println("Server listening on port: " + ss.getLocalPort());
 
             Socket s = ss.accept();
 
@@ -84,26 +88,27 @@ public class Simple {
 
     private static void client(String user, String host, int port) {
 
+        // We are assuming we connect through SSH to "host:22" and then forward on to a server on that same host on port "port"
         try {
-            Connection conn = new Connection(host);
+            SshClient client = SSHUtil.createSSHClient();
 
-            conn.connect();
+            SSHConnection connection = SSHUtil.connect("test", client, host, new PasswordCredential(user, new char[0]), 64 * 1024, 10 * 1000);
+
+            /// client.connect(user, host, port);
 
             // TODO: quick hack.... fix this!!
-            File keyfile = new File(filename);
-            String keyfilePass = "joespass"; // will be ignored if not needed
+            // File keyfile = new File(filename);
+            // String keyfilePass = "joespass"; // will be ignored if not needed
 
-            boolean isAuthenticated = conn.authenticateWithPublicKey(user);
-            if (!isAuthenticated) {
-                isAuthenticated = conn.authenticateWithPublicKey(user, keyfile,
-                        keyfilePass);
-            }
+            // boolean isAuthenticated = conn.authenticateWithPublicKey(user);
+            // if (!isAuthenticated) {
+            // isAuthenticated = conn.authenticateWithPublicKey(user, keyfile, keyfilePass);
+            // }
+            //
+            // if (isAuthenticated == false)
+            // throw new IOException("Authentication failed.");
 
-            if (isAuthenticated == false)
-                throw new IOException("Authentication failed.");
-
-            LocalStreamForwarder lsf = conn.createLocalStreamForwarder(host,
-                    port);
+            LocalStreamForwarder lsf = connection.createLocalStreamForwarder(host, port, 10 * 1000);
 
             DataInputStream in = new DataInputStream(lsf.getInputStream());
             DataOutputStream out = new DataOutputStream(lsf.getOutputStream());
