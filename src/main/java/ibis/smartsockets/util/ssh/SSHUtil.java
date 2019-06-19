@@ -38,7 +38,10 @@ import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.DefaultKnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.RejectAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.NamedResource;
 import org.apache.sshd.common.config.keys.FilePasswordProvider;
+import org.apache.sshd.common.session.SessionContext;
+import org.apache.sshd.common.util.io.resource.PathResource;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.slf4j.Logger;
@@ -66,7 +69,7 @@ public class SSHUtil {
         }
 
         @Override
-        public String getPassword(String resourceKey) throws IOException {
+        public String getPassword(SessionContext session, NamedResource resourceKey, int retryIndex) throws IOException {
             return new String(password);
         }
     }
@@ -121,8 +124,6 @@ public class SSHUtil {
 
                 new Forwarder(s.getInputStream(), channel.getInvertedIn(), null, "LOCAL TO REMOTE");
                 new Forwarder(channel.getInvertedOut(), s.getOutputStream(), null, "REMOTE TO LOCAL");
-                // new StreamForwarder("LOCAL TO REMOTE", s.getInputStream(), channel.getInvertedIn(), bufferSize);
-                // new StreamForwarder("REMOTE TO LOCAL", channel.getInvertedOut(), s.getOutputStream(), bufferSize);
 
             } catch (IOException e) {
                 synchronized (this) {
@@ -210,7 +211,7 @@ public class SSHUtil {
     }
 
     /**
-     * Weak validation of a host string containing either a hostname of IP adres.
+     * Weak validation of a host string containing either a hostame of IP adres.
      *
      * @param adaptorName
      *            the name of the adaptor using this method.
@@ -289,9 +290,8 @@ public class SSHUtil {
      *
      * This method will split the location string into the destination and any number of intermediate hops. The accepted format is:
      * <p>
-     * "host[:port] [via:otherhost[:port]]*"
+     * "host[:port][/workdir] [via:otherhost[:port]]*"
      * </p>
-     * 
      * The locations will be returned in connection setup order, which is the reverse order in which they are listed in the location string.
      *
      * @param adaptorName
@@ -315,6 +315,7 @@ public class SSHUtil {
         int index = tmp.lastIndexOf(VIA_TAG);
 
         while (index != -1) {
+
             if (index == 0) {
                 throw new InvalidLocationException(adaptorName, "Could not parse location: " + location);
             }
@@ -398,9 +399,9 @@ public class SSHUtil {
                 char[] password = c.getPassword();
 
                 if (password.length == 0) {
-                    pair = SecurityUtils.loadKeyPairIdentity(path.toString(), inputStream, null);
+                    pair = SecurityUtils.loadKeyPairIdentities(session, new PathResource(path), inputStream, null).iterator().next();
                 } else {
-                    pair = SecurityUtils.loadKeyPairIdentity(path.toString(), inputStream, new PasswordProvider(password));
+                    pair = SecurityUtils.loadKeyPairIdentities(session, new PathResource(path), inputStream, new PasswordProvider(password)).iterator().next();
                 }
 
             } catch (Exception e) {
@@ -436,9 +437,7 @@ public class SSHUtil {
      * @param client
      *            the client to connect.
      * @param location
-     *            the SSH server to connect to
-     * @param port
-     *            the (non-SSH) port to forward to via the SSH server
+     *            the server to connect to
      * @param credential
      *            the credential to authenticate with.
      * @param bufferSize
@@ -479,14 +478,14 @@ public class SSHUtil {
                 channel.open().await(timeout);
 
                 ServerSocket server = new ServerSocket(0);
-                int lport = server.getLocalPort();
+                int port = server.getLocalPort();
 
                 Tunnel tunnel = new Tunnel(server, channel, bufferSize);
                 tunnel.start();
 
                 connection.addHop(i - 1, session, tunnel);
 
-                session = connectAndAuthenticate(adaptorName, client, "localhost", lport, creds[i], timeout);
+                session = connectAndAuthenticate(adaptorName, client, "localhost", port, creds[i], timeout);
             }
 
         } catch (IOException e) {

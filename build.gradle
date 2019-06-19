@@ -4,11 +4,12 @@ plugins {
     id 'com.jfrog.bintray' version '1.7.3'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'eclipse'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 version = '1.80'
 
-defaultTasks 'jar'
+defaultTasks 'jar', 'shadowJar'
 
 // Prevent warning about POM relocation not being fully supported
 configurations.all {
@@ -29,7 +30,8 @@ repositories {
 
 dependencies {
     compile group: 'nl.junglecomputing', name: 'touchgraph', version: '1.58'
-    compile group: 'org.apache.sshd', name: 'sshd-core', version: '1.7.0' 
+    compile group: 'org.apache.sshd', name: 'sshd-mina', version: '2.2.0'
+    compile group: 'net.i2p.crypto', name: 'eddsa', version: '0.3.0'
     compile group: 'nl.junglecomputing', name: 'sbbi-upnplib', version: '1.0.4'
     compile group: 'de.javawi.jstun', name: 'jstun', version: '0.7.4'
     compile group: 'com.google.guava', name: 'guava', version: '19.0'

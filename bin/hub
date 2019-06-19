@@ -1,11 +1,11 @@
 #!/bin/sh
 
-for i in external/*.jar
-do
-    CP=$CP:$i
-done
+#for i in external/*.jar
+#do
+#    CP=$CP:$i
+#done
 
-for i in lib/*.jar
+for i in lib/*-all.jar
 do
     CP=$CP:$i
 done
