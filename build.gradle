@@ -123,3 +123,10 @@ bintray {
 	licenses = ['Apache-2.0']
     }
 }
+
+shadowJar {
+   dependencies {
+      exclude(dependency('org.slf4j:slf4j-api'))
+      exclude(dependency('log4j:log4j'))
+   }
+}

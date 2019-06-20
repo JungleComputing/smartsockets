@@ -1,9 +1,9 @@
 #!/bin/sh
 
-#for i in external/*.jar
-#do
-#    CP=$CP:$i
-#done
+for i in external/*.jar
+do
+    CP=$CP:$i
+done
 
 for i in lib/*-all.jar
 do
@@ -29,4 +29,5 @@ do
 	shift
 done
 
+echo java -cp $CP $SPECIAL ibis.smartsockets.util.HubStarter $NORMAL
 java -cp $CP $SPECIAL ibis.smartsockets.util.HubStarter $NORMAL

@@ -29,4 +29,5 @@ do
         shift
 done
 
+echo java -cp $CP $SPECIAL ibis.smartsockets.viz.SmartsocketsViz $NORMAL
 java -cp $CP $SPECIAL ibis.smartsockets.viz.SmartsocketsViz $NORMAL
