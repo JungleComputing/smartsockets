@@ -363,7 +363,7 @@ public class NetworkUtils {
 
     /**
      * Converts a String containing a MAC address to bytes.
-     * A 6 byte MAC address using single character seperators is expected as
+     * A MAC address using single character seperators is expected as
      * input.
      *
      * @param mac the address to convert
@@ -371,11 +371,13 @@ public class NetworkUtils {
      */
     public static byte [] MACStringToBytes(String mac) {
 
-        byte [] result = new byte[6];
+        int len = (mac.length()+1) / 3;
+
+        byte [] result = new byte[len];
 
         StringBuffer tmp = new StringBuffer(mac);
 
-        for (int i=0;i<6;i++) {
+        for (int i=0;i<len;i++) {
             result[i] =
                 (byte) (0xff & Integer.parseInt(tmp.substring(i*3, i*3+2), 16));
         }

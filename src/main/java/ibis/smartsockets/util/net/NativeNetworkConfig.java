@@ -15,6 +15,12 @@
  */
 package ibis.smartsockets.util.net;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 /** try to determine MAC address of local network card; this is done
  using a shell to run ifconfig (linux) or ipconfig (windows). The
  output of the processes will be parsed.
@@ -47,11 +53,6 @@ package ibis.smartsockets.util.net;
 import ibis.smartsockets.util.NetworkUtils;
 import ibis.smartsockets.util.RunProcess;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.LinkedList;
-import java.util.List;
-
 
 public final class NativeNetworkConfig {
 
@@ -79,12 +80,12 @@ public final class NativeNetworkConfig {
         String os = System.getProperty("os.name");
 
         for (NetworkInfoParser parser : parsers) {
-            if (os.startsWith(parser.osName)) {
 
+            if (os.startsWith(parser.osName)) {
                 if (getInfo(parser)) {
                     return;
                 }
-            }
+            } 
         }
 
         throw new IOException("Unable to retrieve network info for " + os);
@@ -110,13 +111,15 @@ public final class NativeNetworkConfig {
 
         byte [] errors = rp.getStderr();
 
+        /* Removed, since infiniband seems to produce a warning on stderr by default
         if (errors.length != 0) {
 
-           // System.out.println("Command " + command[0] + " failed");
+            System.out.println("Command " + command[0] + " failed " + new String(errors));
 
             // Failed to get info!
             return false;
         }
+        */
 
         byte [] output = rp.getStdout();
 

@@ -56,7 +56,7 @@ public class LinuxNetworkInfoParser extends NetworkInfoParser {
 
         return result;
     }
-
+    
     private boolean parseBlock(String tmp, List<NetworkInfo> info) {
 
         // // System.out.println("Parse block:\n" + tmp + "\n\n");
