@@ -70,7 +70,8 @@ public final class NativeNetworkConfig {
         try {
             getNetworkInfo();
         } catch (Exception e) {
-            // TODO: print something ?
+            System.err.println("Failed to retrieve network info!" + e);
+            e.printStackTrace();
         }
     }
 
@@ -150,10 +151,11 @@ public final class NativeNetworkConfig {
     }
 
     public static byte[] getMACAddress(InetAddress ip) throws IOException {
+
         NetworkInfo nw = getNetworkInfo(ip);
 
-        if (nw == null || nw.broadcast == null) {
-            throw new IOException("Failed to retrieve BROADCAST for " +
+        if (nw == null || nw.mac == null) {
+            throw new IOException("Failed to retrieve MAC for " +
                     NetworkUtils.ipToString(ip));
         }
 
@@ -163,8 +165,8 @@ public final class NativeNetworkConfig {
     public static byte[] getNetmask(InetAddress ip) throws IOException {
         NetworkInfo nw = getNetworkInfo(ip);
 
-        if (nw == null || nw.broadcast == null) {
-            throw new IOException("Failed to retrieve BROADCAST for " +
+        if (nw == null || nw.netmask == null) {
+            throw new IOException("Failed to retrieve NETMASK for " +
                     NetworkUtils.ipToString(ip));
         }
 

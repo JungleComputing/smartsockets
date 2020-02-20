@@ -55,24 +55,42 @@ public abstract class NetworkInfoParser {
 		|| ipv6PatternHexCompressed.matcher(ip).matches();
     }
 
-    protected static final String getIPv4Field(String line, String header) {
-	int index = line.indexOf(header);
+	protected static final String getField(String line, String header) {
+		int index = line.indexOf(header);
+	
+		if (index >= 0) {
+			String tmp = line.substring(index + header.length()).trim();
+	
+			index = tmp.indexOf(' ');
+	
+			if (index >= 0) {
+				tmp = tmp.substring(0, index).trim();
+			}
 
-	if (index >= 0) {
-	    String tmp = line.substring(index + header.length()).trim();
+			return tmp;
+		} 
 
-	    index = tmp.indexOf(' ');
-
-	    if (index >= 0) {
-		tmp = tmp.substring(0, index).trim();
-	    }
-
-	    if (isIPv4Address(tmp)) {
-		return tmp;
-	    }
+		return null;
 	}
+	
+    protected static final String getIPv4Field(String line, String header) {
+		int index = line.indexOf(header);
 
-	return null;
+		if (index >= 0) {
+			String tmp = line.substring(index + header.length()).trim();
+
+			index = tmp.indexOf(' ');
+
+			if (index >= 0) {
+				tmp = tmp.substring(0, index).trim();
+			}
+
+			if (isIPv4Address(tmp)) {
+				return tmp;
+			}
+		}
+
+		return null;
     }
 
     protected static final String getIPv6Field(String line, String header) {
