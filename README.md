@@ -175,7 +175,7 @@ reachable from all the intended participants.
 Starting a hub can be done using the following script in the smartsockets 
 distribution:
 ```
-   ./bin/hub
+   ./scripts/hub
 ```
 When started, the hub will print it's contact address. For example:
 ```
@@ -184,7 +184,7 @@ When started, the hub will print it's contact address. For example:
 If multiple hubs are used, this address can be provided as a parameter to  
 other hubs, like this: 
 ```
-   ./bin/hub 130.37.193.15-17878~jason  
+   ./scripts/hub 130.37.193.15-17878~jason  
 ```
 This second hub will then attempt to connect to it. Note that hubs can only 
 use direct connections or SSH tunneling. Since they are part of the SmartSockets 
@@ -263,7 +263,7 @@ these applications, a simple latency test.
 We start by creating a hub network as described above. In our case, a single hub 
 is sufficient:
 ```   
-   ./bin/hub
+   ./scripts/hub
 ```
 Which prints: 
 ```
@@ -271,7 +271,7 @@ Which prints:
 ```
 We now start one of the test applications using a script in the distribution:
 ```
-./bin/app test.virtual.simple.Latency \
+./scripts/app test.virtual.simple.Latency \
        -Dsmartsockets.hub.addresses=130.37.193.15-17878~jason
 ```
 Note that we provide the hub contact address to the application using the '-D'
@@ -288,7 +288,7 @@ hub address is also part of this data.
 We now start the client side of the application on a different machine, a laptop
 behind an ADSL modem which does NAT:
 ```
-./bin/app test.virtual.simple.Latency \
+./scripts/app test.virtual.simple.Latency \
         -Dsmartsockets.hub.addresses=130.37.193.15-17878~jason \
         -target 130.37.193.15-44672:3000@130.37.193.15-17878~jason# \
         -count 100
