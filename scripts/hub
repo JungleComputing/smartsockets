@@ -1,0 +1,33 @@
+#!/bin/sh
+
+for i in external/*.jar
+do
+    CP=$CP:$i
+done
+
+for i in lib/*-all.jar
+do
+    CP=$CP:$i
+done
+
+NORMAL=
+SPECIAL=
+
+while [ $# -gt 0 ]
+do
+	
+	HEADER=`echo $1 | head --bytes=2`
+
+	case "$HEADER" in
+	-D)
+		SPECIAL="$SPECIAL $1"
+		;;
+	*)
+		NORMAL="$NORMAL $1"
+		;;
+	esac
+	shift
+done
+
+echo java -cp $CP $SPECIAL ibis.smartsockets.util.HubStarter $NORMAL
+java -cp $CP $SPECIAL ibis.smartsockets.util.HubStarter $NORMAL
