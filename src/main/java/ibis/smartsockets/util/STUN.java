@@ -15,8 +15,6 @@
  */
 package ibis.smartsockets.util;
 
-import ibis.smartsockets.util.ThreadPool;
-
 import java.net.InetAddress;
 
 import org.slf4j.Logger;
@@ -27,15 +25,10 @@ import de.javawi.jstun.test.DiscoveryTest;
 
 public class STUN {
 
-    private static Logger logger =
-        LoggerFactory.getLogger(STUN.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(STUN.class.getName());
 
-    private static String [] DEFAULT_SERVERS =
-        new String [] { "stun.voipbuster.com",
-                        "stun.fwd.org",
-                        "iphone-stun.freenet.de",
-                        "stun.xten.net",
-                        "stun.fwdnet.net" };
+    private static String[] DEFAULT_SERVERS = new String[] { "stun.voipbuster.com", "stun.fwd.org", "iphone-stun.freenet.de", "stun.xten.net",
+            "stun.fwdnet.net" };
 
     private static InetAddress external;
 
@@ -47,7 +40,6 @@ public class STUN {
 
         private boolean done = false;
         private DiscoveryInfo result;
-
 
         public Discovery(InetAddress iaddress, int port, String server) {
             this.iaddress = iaddress;
@@ -75,24 +67,25 @@ public class STUN {
         public void run() {
             try {
                 if (logger.isInfoEnabled()) {
-                    logger.info("STUN discovery initiated on: " + iaddress
-                            + ":" + port);
+                    logger.info("STUN discovery initiated on: " + iaddress + ":" + port);
                 }
 
+                // Note: this used to be the following (which gave compile errors).
+                //
                 DiscoveryTest test = new DiscoveryTest(iaddress, port, server, 3478);
+
+                // DiscoveryTest test2 = new DiscoveryTest(iaddress, server, port);
 
                 synchronized (this) {
                     result = test.test();
 
                     if (logger.isInfoEnabled()) {
-                        logger.info("STUN discovery done on: " + iaddress + ":" + port
-                                + "\n" + result);
+                        logger.info("STUN discovery done on: " + iaddress + ":" + port + "\n" + result);
                     }
 
                     done = true;
                     notifyAll();
                 }
-
 
             } catch (Exception e) {
                 logger.warn("STUN discovery on " + iaddress + " failed!", e);
@@ -103,12 +96,11 @@ public class STUN {
     private static void getExternalAddress(String server, int timeout) {
 
         if (logger.isInfoEnabled()) {
-            logger.info("Trying to determine external address using "
-                    + "STUN server:" + server);
+            logger.info("Trying to determine external address using " + "STUN server:" + server);
         }
 
-        InetAddress [] addresses = NetworkUtils.getAllHostAddresses();
-        Discovery [] tmp = new Discovery[addresses.length];
+        InetAddress[] addresses = NetworkUtils.getAllHostAddresses();
+        Discovery[] tmp = new Discovery[addresses.length];
 
         if (logger.isInfoEnabled()) {
             logger.info("Network addresses available: " + addresses.length);
@@ -121,7 +113,7 @@ public class STUN {
 
         // For each network address (except loopback) we start a thread that
         // tries to find the external address using STUN.
-        for (int i=0;i<addresses.length;i++) {
+        for (int i = 0; i < addresses.length; i++) {
             if (!addresses[i].isLoopbackAddress()) {
                 count++;
                 tmp[i] = new Discovery(addresses[i], port + i, server);
@@ -134,7 +126,7 @@ public class STUN {
         while (true) {
 
             // Next, we gather the results and try to find an external address.
-            for (int i=0;i<tmp.length;i++) {
+            for (int i = 0; i < tmp.length; i++) {
                 if (tmp[i] != null && tmp[i].done()) {
                     DiscoveryInfo info = tmp[i].getResult();
                     tmp[i] = null;
@@ -156,8 +148,7 @@ public class STUN {
                         }
 
                         if (logger.isInfoEnabled()) {
-                            logger.info("Found external address: " + external
-                                    + " using server " + server);
+                            logger.info("Found external address: " + external + " using server " + server);
                         }
                         return;
                     }
@@ -187,7 +178,7 @@ public class STUN {
         }
     }
 
-    public static InetAddress getExternalAddress(String [] servers, int timeout) {
+    public static InetAddress getExternalAddress(String[] servers, int timeout) {
 
         if (external != null) {
             return external;
@@ -197,7 +188,7 @@ public class STUN {
             servers = DEFAULT_SERVERS;
         }
 
-        for (int i=0;i<servers.length;i++) {
+        for (int i = 0; i < servers.length; i++) {
             getExternalAddress(servers[i], 0);
 
             if (external != null) {
@@ -209,18 +200,18 @@ public class STUN {
     }
 
     public static InetAddress getExternalAddress(int timeout) {
-        return getExternalAddress((String []) null, timeout);
+        return getExternalAddress((String[]) null, timeout);
     }
 
-    public static InetAddress getExternalAddress(String [] servers) {
+    public static InetAddress getExternalAddress(String[] servers) {
         return getExternalAddress(servers, 0);
     }
 
     public static InetAddress getExternalAddress() {
-        return getExternalAddress((String []) null, 0);
+        return getExternalAddress((String[]) null, 0);
     }
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
 
         System.out.println("Attempting to retrieve external address....");
 
@@ -230,7 +221,6 @@ public class STUN {
 
         long end = System.currentTimeMillis();
 
-        System.out.println("Got address " + NetworkUtils.ipToString(ad)
-                + " after " + (end-start) + " ms.");
+        System.out.println("Got address " + NetworkUtils.ipToString(ad) + " after " + (end - start) + " ms.");
     }
 }

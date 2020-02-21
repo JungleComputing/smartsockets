@@ -56,7 +56,7 @@ public class LinuxNetworkInfoParser extends NetworkInfoParser {
 
         return result;
     }
-
+    
     private boolean parseBlock(String tmp, List<NetworkInfo> info) {
 
         // // System.out.println("Parse block:\n" + tmp + "\n\n");
@@ -69,20 +69,18 @@ public class LinuxNetworkInfoParser extends NetworkInfoParser {
 
             String line = tokenizer.nextToken().trim();
 
-            // // System.out.println("Line: " + line);
+            // The hardware adress (MAC) is behind a device specific name, such as "ether" or "infiniband"
+            String mac = getField(line, "ether");
 
-            int index = line.indexOf("HWaddr ");
-
-            if (index > 0) {
-                String mac = line.substring(index + 6).trim();
-
-                if (isMacAddress(mac)) {
-                    // // System.out.println("Got mac " + mac);
-                    nw.mac = NetworkUtils.MACStringToBytes(mac);
-                }
+            if (mac == null) { 
+                mac = getField(line, "infiniband");
             }
 
-            String t = getIPv4Field(line, "inet addr:");
+            if (mac != null && isMacAddress(mac)) {
+                nw.mac = NetworkUtils.MACStringToBytes(mac);
+            }
+            
+            String t = getIPv4Field(line, "inet ");
 
             if (t != null) {
                 // .println("Got ipv4 " + t);
@@ -93,21 +91,21 @@ public class LinuxNetworkInfoParser extends NetworkInfoParser {
                 }
             }
 
-            t = getIPv4Field(line, "Bcast:");
+            t = getIPv4Field(line, "broadcast ");
 
             if (t != null) {
                 // System.out.println("Got bcast " + t);
                 nw.broadcast = ipStringToBytes(t);
             }
 
-            t = getIPv4Field(line, "Mask:");
+            t = getIPv4Field(line, "netmask ");
 
             if (t != null) {
                 // System.out.println("Got mask " + t);
                 nw.netmask = ipStringToBytes(t);
             }
 
-            t = getIPv6Field(line, "inet6 addr:");
+            t = getIPv6Field(line, "inet6 ");
 
             if (t != null) {
                 // System.out.println("Got ipv6 " + t);

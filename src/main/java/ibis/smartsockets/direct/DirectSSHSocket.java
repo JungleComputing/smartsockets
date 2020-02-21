@@ -21,17 +21,18 @@ import java.io.OutputStream;
 import java.net.SocketException;
 import java.nio.channels.SocketChannel;
 
+import ibis.smartsockets.util.ssh.LocalStreamForwarder;
+
 // import ch.ethz.ssh2.LocalStreamForwarder;
 
-import com.trilead.ssh2.LocalStreamForwarder;
+// import com.trilead.ssh2.LocalStreamForwarder;
 
 public class DirectSSHSocket extends DirectSocket {
 
     private final LocalStreamForwarder lsf;
     private boolean closed = false;
 
-    public DirectSSHSocket(DirectSocketAddress local, DirectSocketAddress remote,
-            InputStream in, OutputStream out, LocalStreamForwarder lsf) {
+    public DirectSSHSocket(DirectSocketAddress local, DirectSocketAddress remote, InputStream in, OutputStream out, LocalStreamForwarder lsf) {
 
         super(local, remote, in, out);
 
@@ -151,13 +152,13 @@ public class DirectSSHSocket extends DirectSocket {
 
     @Override
     public void setKeepAlive(boolean on) throws SocketException {
-	// TODO Auto-generated method stub
-	
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public boolean getKeepAlive() throws SocketException {
-	// TODO Auto-generated method stub
-	return false;
+        // TODO Auto-generated method stub
+        return false;
     }
 }

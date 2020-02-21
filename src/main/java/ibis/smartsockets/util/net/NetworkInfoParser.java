@@ -22,8 +22,9 @@ import java.util.regex.Pattern;
 
 public abstract class NetworkInfoParser {
 
+	// Note that normal MAC addresses are 48 bits (6 bytes), but on infiniband they seem to be 20 bytes. 
     protected final static Pattern macPattern = Pattern
-	    .compile("([0-9a-fA-F]{2}[\\-:]){5}[0-9a-fA-F]{2}");
+	    .compile("([0-9a-fA-F]{2}[\\-:]){5,19}[0-9a-fA-F]{2}");
 
     protected final static Pattern ipv4Pattern = Pattern
 	    .compile("\\A(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\z");
@@ -55,24 +56,42 @@ public abstract class NetworkInfoParser {
 		|| ipv6PatternHexCompressed.matcher(ip).matches();
     }
 
-    protected static final String getIPv4Field(String line, String header) {
-	int index = line.indexOf(header);
+	protected static final String getField(String line, String header) {
+		int index = line.indexOf(header);
+	
+		if (index >= 0) {
+			String tmp = line.substring(index + header.length()).trim();
+	
+			index = tmp.indexOf(' ');
+	
+			if (index >= 0) {
+				tmp = tmp.substring(0, index).trim();
+			}
 
-	if (index >= 0) {
-	    String tmp = line.substring(index + header.length()).trim();
+			return tmp;
+		} 
 
-	    index = tmp.indexOf(' ');
-
-	    if (index >= 0) {
-		tmp = tmp.substring(0, index).trim();
-	    }
-
-	    if (isIPv4Address(tmp)) {
-		return tmp;
-	    }
+		return null;
 	}
+	
+    protected static final String getIPv4Field(String line, String header) {
+		int index = line.indexOf(header);
 
-	return null;
+		if (index >= 0) {
+			String tmp = line.substring(index + header.length()).trim();
+
+			index = tmp.indexOf(' ');
+
+			if (index >= 0) {
+				tmp = tmp.substring(0, index).trim();
+			}
+
+			if (isIPv4Address(tmp)) {
+				return tmp;
+			}
+		}
+
+		return null;
     }
 
     protected static final String getIPv6Field(String line, String header) {
