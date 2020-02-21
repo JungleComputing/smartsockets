@@ -15,6 +15,11 @@
  */
 package ibis.smartsockets.util.net;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.LinkedList;
+import java.util.List;
+
 /** try to determine MAC address of local network card; this is done
  using a shell to run ifconfig (linux) or ipconfig (windows). The
  output of the processes will be parsed.
@@ -47,18 +52,11 @@ package ibis.smartsockets.util.net;
 import ibis.smartsockets.util.NetworkUtils;
 import ibis.smartsockets.util.RunProcess;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.LinkedList;
-import java.util.List;
-
-
 public final class NativeNetworkConfig {
 
     private static List<NetworkInfo> info = new LinkedList<NetworkInfo>();
 
-    private static List<NetworkInfoParser> parsers =
-        new LinkedList<NetworkInfoParser>();
+    private static List<NetworkInfoParser> parsers = new LinkedList<NetworkInfoParser>();
 
     static {
         // TODO: use reflection here ?
@@ -70,7 +68,8 @@ public final class NativeNetworkConfig {
         try {
             getNetworkInfo();
         } catch (Exception e) {
-            // TODO: print something ?
+            System.err.println("Failed to retrieve network info!" + e);
+            e.printStackTrace();
         }
     }
 
@@ -78,8 +77,8 @@ public final class NativeNetworkConfig {
         String os = System.getProperty("os.name");
 
         for (NetworkInfoParser parser : parsers) {
-            if (os.startsWith(parser.osName)) {
 
+            if (os.startsWith(parser.osName)) {
                 if (getInfo(parser)) {
                     return;
                 }
@@ -91,8 +90,8 @@ public final class NativeNetworkConfig {
 
     private static boolean getInfo(NetworkInfoParser p) {
 
-        for (int i=0;i<p.numberOfCommands();i++) {
-            String [] tmp = p.getCommand(i);
+        for (int i = 0; i < p.numberOfCommands(); i++) {
+            String[] tmp = p.getCommand(i);
 
             if (getInfo(p, tmp)) {
                 return true;
@@ -102,22 +101,20 @@ public final class NativeNetworkConfig {
         return false;
     }
 
-    private static boolean getInfo(NetworkInfoParser p, String [] command) {
+    private static boolean getInfo(NetworkInfoParser p, String[] command) {
 
         RunProcess rp = new RunProcess(command);
         rp.run();
 
-        byte [] errors = rp.getStderr();
+        /*
+         * Removed, since infiniband seems to produce a warning on stderr by default byte [] errors = rp.getStderr();
+         * 
+         * if (errors.length != 0) { System.err.println("Command " + command[0] + " failed " + new String(errors));
+         * 
+         * // Failed to get info! return false; }
+         */
 
-        if (errors.length != 0) {
-
-           // System.out.println("Command " + command[0] + " failed");
-
-            // Failed to get info!
-            return false;
-        }
-
-        byte [] output = rp.getStdout();
+        byte[] output = rp.getStdout();
 
         if (output.length == 0) {
             // No ouput ?
@@ -138,23 +135,22 @@ public final class NativeNetworkConfig {
         return null;
     }
 
-    public static byte [] getBroadcast(InetAddress ip) throws IOException {
+    public static byte[] getBroadcast(InetAddress ip) throws IOException {
         NetworkInfo nw = getNetworkInfo(ip);
 
         if (nw == null || nw.broadcast == null) {
-            throw new IOException("Failed to retrieve BROADCAST for " +
-                    NetworkUtils.ipToString(ip));
+            throw new IOException("Failed to retrieve BROADCAST for " + NetworkUtils.ipToString(ip));
         }
 
         return nw.broadcast;
     }
 
     public static byte[] getMACAddress(InetAddress ip) throws IOException {
+
         NetworkInfo nw = getNetworkInfo(ip);
 
-        if (nw == null || nw.broadcast == null) {
-            throw new IOException("Failed to retrieve BROADCAST for " +
-                    NetworkUtils.ipToString(ip));
+        if (nw == null || nw.mac == null) {
+            throw new IOException("Failed to retrieve MAC for " + NetworkUtils.ipToString(ip));
         }
 
         return nw.mac;
@@ -163,13 +159,11 @@ public final class NativeNetworkConfig {
     public static byte[] getNetmask(InetAddress ip) throws IOException {
         NetworkInfo nw = getNetworkInfo(ip);
 
-        if (nw == null || nw.broadcast == null) {
-            throw new IOException("Failed to retrieve BROADCAST for " +
-                    NetworkUtils.ipToString(ip));
+        if (nw == null || nw.netmask == null) {
+            throw new IOException("Failed to retrieve NETMASK for " + NetworkUtils.ipToString(ip));
         }
 
         return nw.netmask;
     }
-
 
 }
