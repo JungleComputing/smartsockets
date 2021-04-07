@@ -1,13 +1,15 @@
 plugins {
     id 'java'
-    id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.7.3'
+    id 'maven'
+    id 'signing'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'eclipse'
     id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 version = '1.80'
+group = 'nl.junglecomputing'
+archivesBaseName = 'smartsockets'
 
 defaultTasks 'jar', 'shadowJar'
 
@@ -19,13 +21,8 @@ configurations.all {
 }
 
 repositories {
-    mavenLocal()
+    // mavenLocal()
     mavenCentral()
-    jcenter()
-    maven {
-	// Added for stuff that is not in jcenter yet.
-	url 'https://dl.bintray.com/cerieljacobs/JungleComputing'
-    }
 }
 
 dependencies {
@@ -42,10 +39,8 @@ dependencies {
     testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.21'
 }
 
-def pomConfig = {
-    scm {
-        url "https://github.com/junglecomputing/smartsockets.git"
-    }
+signing {
+    sign configurations.archives
 }
 
 license {
@@ -79,29 +74,6 @@ artifacts {
     archives javadocJar
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-	    artifact sourcesJar {
-		classifier "sources"
-	    }
-	    artifact javadocJar {
-		classifier "javadoc"
-	    }
-	    groupId 'nl.junglecomputing'
-	    artifactId 'smartsockets'
-	    version version
-
-	    pom.withXml {
-                def root = asNode()
-                root.appendNode('url', 'https://github.com/junglecomputing/smartsockets.git')
-                root.children().last() + pomConfig
-            }
-        }
-    }
-}
-
 tasks.withType(Jar) {
     destinationDir = file("$rootDir/lib")
 }
@@ -111,17 +83,49 @@ task copyRuntimeLibs(type: Copy) {
     from configurations.runtime
 }
 
-bintray {
-    user = System.getenv('BINTRAY_NAME')
-    key = System.getenv('BINTRAY_APIKEY')
-    publications = ['mavenJava']
-    pkg {
-	repo = 'JungleComputing'
-	name = 'smartsockets'
-	userOrg = "$user"
-	vcsUrl = 'https://github.com/junglecomputing/smartsockets.git'
-	licenses = ['Apache-2.0']
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'SmartSockets'
+        packaging 'jar'
+        description 'Smartsockets is an open source communication library that automatically discovers many of the connectivity problems and solves them with as little support from the user as possible.'
+
+        url 'https://github.com/junglecomputing/smartsockets'
+
+        scm {
+          connection 'scm:git:git://github.com/junglecomputing/smartsockets.git'
+          developerConnection 'scm:git:ssh://github.com:junglecomputing/smartsockets.git'
+          url 'https://github.com/junglecomputing/smartsockets/tree/master'
+        }
+
+        licenses {
+          license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+
+        developers {
+          developer {
+            name 'Jason Maassen'
+            organization 'Netherlands escience Center'
+            url 'https://www.esciencecenter.nl/team/dr-jason-maassen/'
+          }
+        }
+      }
     }
+  }
 }
 
 shadowJar {
