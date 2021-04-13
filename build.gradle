@@ -118,9 +118,9 @@ uploadArchives {
 
         developers {
           developer {
-            name 'Jason Maassen'
-            organization 'Netherlands escience Center'
-            url 'https://www.esciencecenter.nl/team/dr-jason-maassen/'
+            name = 'Jason Maassen'
+            organization = 'Netherlands escience Center'
+            url = 'https://www.esciencecenter.nl/team/dr-jason-maassen/'
           }
         }
       }
